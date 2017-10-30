@@ -1,6 +1,6 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
-import {Editor, EditorState} from 'draft-js';
+//import {Editor, EditorState} from 'draft-js';
 
 /* This can check if your electron app can communicate with your backend */
 // fetch('http://localhost:3000')
@@ -8,5 +8,5 @@ import {Editor, EditorState} from 'draft-js';
 // .then(text => console.log(text))
 // .catch(err => {throw err})
 
-ReactDOM.render(<p>React lives!</p>,
+ReactDOM.render(<p>React lives yay</p>,
    document.getElementById('root'));
