@@ -2,7 +2,6 @@ import 'babel-polyfill';
 import React from 'react';
 import ReactDOM from 'react-dom';
 import {Editor, EditorState} from 'draft-js';
-import '../build/Draft.css';
 /* This can check if your electron app can communicate with your backend */
 fetch('http://localhost:3000')
 .then(resp => resp.text())
