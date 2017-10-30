@@ -1,6 +1,9 @@
 const express = require('express');
 const app = express();
 
+// UNCOMMENT WHEN WE'RE READY TO START SETTING UP WEB SOCKETS
+// require('./webSockets');
+
 // Example route
 app.get('/', function (req, res) {
   res.send('Hello World!');
