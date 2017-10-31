@@ -18,6 +18,10 @@ var userSchema = new Schema({
   }
 });
 var documentSchema = new Schema({
+  ownerId: {
+    type: String,
+    required: true
+  },
   editors:{
     type: Array
   },

@@ -34,11 +34,21 @@ class Toolbar extends React.Component {
        <button onClick={()=>this.props.setBlockStyle('ordered-list-item')} type = "button" className = "btn btn-toolbar col-xs-1">
          <span className="fa fa-list-ol"/>
        </button>
-       <span>Warning: change font size at your own risk.</span>
-       <select onChange={(evt)=>this.props.setInlineStyle(evt.target.value)}>
-          <option value={'12'}> Small </option>
-          <option value={'18'}> Medium </option>
-          <option value={'36'}> Large </option>
+       <select onChange={(evt)=>this.props.toggleStrictInlineStyle(evt.target.value,'SIZE')}>
+          <option value={false}>- font size -</option>
+          <option value={'SIZE_12'}> Small </option>
+          <option value={'SIZE_18'}> Medium </option>
+          <option value={'SIZE_36'}> Large </option>
+       </select>
+       <select onChange={(evt)=>this.props.toggleStrictInlineStyle(evt.target.value,'COLOR')}>
+          <option value={false}>- font color -</option>
+          <option value={'COLOR_RED'}> Red </option>
+          <option value={'COLOR_ORANGE'}> Orange </option>
+          <option value={'COLOR_YELLOW'}> Yellow </option>
+          <option value={'COLOR_GREEN'}> Green </option>
+          <option value={'COLOR_BLUE'}> Blue </option>
+          <option value={'COLOR_INDIGO'}> Indigo </option>
+          <option value={'COLOR_VIOLET'}> Violet </option>
        </select>
       </div>
     );
