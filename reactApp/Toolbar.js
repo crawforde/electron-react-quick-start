@@ -5,6 +5,23 @@ import React from 'react';
 class Toolbar extends React.Component {
   constructor(props) {
     super(props);
+    this.state={
+      COLOR: props.COLOR,
+      SIZE: props.SIZE
+    };
+  }
+
+  componentWillReceiveProps(newProps){
+    this.setState({
+      COLOR: newProps.COLOR ? newProps.COLOR : this.state.COLOR,
+      SIZE: newProps.SIZE ? newProps.SIZE : this.state.SIZE
+    });
+  }
+
+  handleStrictInlineStyle(style,type){
+    this.setState({
+      type: style
+    },()=>this.props.toggleStrictInlineStyle(style,type));
   }
 
   render() {
@@ -34,14 +51,14 @@ class Toolbar extends React.Component {
        <button onClick={()=>this.props.setBlockStyle('ordered-list-item')} type = "button" className = "btn btn-toolbar col-xs-1">
          <span className="fa fa-list-ol"/>
        </button>
-       <select onChange={(evt)=>this.props.toggleStrictInlineStyle(evt.target.value,'SIZE')}>
-          <option value={false}>- font size -</option>
+       <select value={this.state.SIZE} onChange={(evt)=>this.handleStrictInlineStyle(evt.target.value,'SIZE')}>
+          <option value={'mixed'}>- font size -</option>
           <option value={'SIZE_12'}> Small </option>
           <option value={'SIZE_18'}> Medium </option>
           <option value={'SIZE_36'}> Large </option>
        </select>
-       <select onChange={(evt)=>this.props.toggleStrictInlineStyle(evt.target.value,'COLOR')}>
-          <option value={false}>- font color -</option>
+       <select value={this.state.COLOR} onChange={(evt)=>this.handleStrictInlineStyle(evt.target.value,'COLOR')}>
+          <option value={'mixed'}>- font color -</option>
           <option value={'COLOR_RED'}> Red </option>
           <option value={'COLOR_ORANGE'}> Orange </option>
           <option value={'COLOR_YELLOW'}> Yellow </option>

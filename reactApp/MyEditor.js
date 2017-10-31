@@ -40,67 +40,161 @@ class MyEditor extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
-      editorState: EditorState.createEmpty()
+      editorState: props.editorState ? JSON.parse(props.editorState) : EditorState.createEmpty(),
+      COLOR: 'mixed',
+      SIZE: 'mixed'
     };
-    this.onChange = (editorState) => this.setState({editorState});
+    this.onChange = this.onChange.bind(this);
     this.handleKeyCommand = this.handleKeyCommand.bind(this);
     this.blockStyleFn = this.blockStyleFn.bind(this);
+    this.handleSelectionEvent = this.handleSelectionEvent.bind(this);
+  }
+
+  onChange(newState){
+    const currentContentState = this.state.editorState.getCurrentContent();
+    const newContentState = newState.getCurrentContent();
+    if (currentContentState === newContentState) {
+      var selectionState = newState.getSelection();
+      var anchorKey = selectionState.getAnchorKey();
+      var contentBlock = newContentState.getBlockForKey(anchorKey);
+      var start = selectionState.getStartOffset();
+      var end = selectionState.getEndOffset();
+      var chars = contentBlock.getCharacterList()._tail;
+      if(chars){
+        var charStyles = chars.array.map((metadata)=>metadata.getStyle()._map._list);
+        charStyles = charStyles.slice(start,end);
+        charStyles = charStyles.map((list)=>{
+          if(list._tail){
+            return list._tail.array.map((feature)=>{
+              return feature ? feature[0] : feature;
+            });
+          }
+          return false;
+        });
+        this.handleSelectionEvent(charStyles);
+      }
+    }
+    this.setState({editorState: newState});
+  }
+
+  handleSelectionEvent(charStyles){
+    var color = false;
+    var size = false;
+    var colors = charStyles.map((styles)=>this.getStyle(styles,'COLOR'));
+    if(colors.length > 0){
+      color = this.describeStyle(colors);
+    }
+    var sizes = charStyles.map((styles)=>this.getStyle(styles,'SIZE'));
+    if(sizes.length > 0) {
+      size = this.describeStyle(sizes);
+    }
+    if(!color){
+      color = 'mixed';
+    }
+    if(!size){
+      size = 'mixed';
+    }
+    this.setState({
+      COLOR: color,
+      SIZE: size
+    });
+  }
+
+  describeStyle(arr){
+    var value = arr.pop();
+    try{
+      arr.forEach((val)=>{
+        if(val !== value){
+          throw('Mixed Styles');
+        }
+      });
+    } catch(err) {
+      return 'mixed';
+    }
+    return value;
+  }
+
+  getStyle(styles, styleType){
+    if(!styles || styles.length === 0){
+      return false;
+    }
+    try {
+      styles.forEach((styleName)=>{
+        if(styleName){
+          var arr = styleName.split('_');
+          if(arr[0]===styleType){
+            throw(styleName);
+          }
+        }
+      });
+    } catch(err){
+      if (typeof err === 'string'){
+        return err;
+      }
+      console.log('Error:', err);
+    }
+    return false;
   }
 
   toggleStrictInlineStyle(toggledStyle, propertyType){
-    if(toggledStyle==='false'){
-      return;
+    if(toggledStyle==='mixed'){
+      this.setState({
+        propertyType: toggledStyle
+      });
     }
-    const { editorState } = this.state;
-    const selection = editorState.getSelection();
+    else {
+      const { editorState } = this.state;
+      const selection = editorState.getSelection();
 
-    // Let's just allow one color,size,etc. at a time. Turn off all styles with same property type.
+      // Let's just allow one color,size,etc. at a time. Turn off all styles with same property type.
 
-    const nextContentState = Object.keys(styleMap)
-      .filter((value)=>{
-        var type = value.split('_')[0];
-        return type === propertyType;
-      })
-      .reduce((contentState, style)=>{
-        return Modifier.removeInlineStyle(contentState, selection, style);
-      }, editorState.getCurrentContent());
+      const nextContentState = Object.keys(styleMap)
+        .filter((value)=>{
+          var type = value.split('_')[0];
+          return type === propertyType;
+        })
+        .reduce((contentState, style)=>{
+          return Modifier.removeInlineStyle(contentState, selection, style);
+        }, editorState.getCurrentContent());
 
-    let nextEditorState = EditorState.push(
-      editorState,
-      nextContentState,
-      "change-inline-style"
-    );
-
-    const currentStyle = editorState.getCurrentInlineStyle();
-
-    // Unset style override for current style.
-    if(selection.isCollapsed()) {
-      nextEditorState = currentStyle.reduce((state,style) => {
-        return RichUtils.toggleInlineStyle(state, style);
-      }, nextEditorState);
-    }
-
-    // If the style is being toggled on, apply it.
-    if(!currentStyle.has(toggledStyle)){
-      nextEditorState = RichUtils.toggleInlineStyle(
-        nextEditorState,
-        toggledStyle
+      let nextEditorState = EditorState.push(
+        editorState,
+        nextContentState,
+        "change-inline-style"
       );
+
+      const currentStyle = editorState.getCurrentInlineStyle();
+
+      // Unset style override for current style.
+      if(selection.isCollapsed()) {
+        nextEditorState = currentStyle.reduce((state,style) => {
+          return RichUtils.toggleInlineStyle(state, style);
+        }, nextEditorState);
+      }
+
+      // If the style is being toggled on, apply it.
+      if(!currentStyle.has(toggledStyle)){
+        nextEditorState = RichUtils.toggleInlineStyle(
+          nextEditorState,
+          toggledStyle
+        );
+      }
+
+      // Above code sometimes has unanticipated consequences for blocks of text
+      // with mixed styling. This next block ensures that the desired style is
+      // applied.
+      const nextStyle = nextEditorState.getCurrentInlineStyle();
+
+      if(!nextStyle.has(toggledStyle)){
+        nextEditorState = RichUtils.toggleInlineStyle(
+          nextEditorState,
+          toggledStyle
+        );
+      }
+      this.setState({
+        propertyType: toggledStyle
+      },()=>this.onChange(nextEditorState));
     }
-
-    // Above code sometimes has unanticipated consequences for blocks of text
-    // with mixed styling. This next block ensures that the desired style is
-    // applied.
-    const nextStyle = nextEditorState.getCurrentInlineStyle();
-
-    if(!nextStyle.has(toggledStyle)){
-      nextEditorState = RichUtils.toggleInlineStyle(
-        nextEditorState,
-        toggledStyle
-      );
-    }
-
-    this.onChange(nextEditorState);
   }
 
   handleKeyCommand(command, editorState) {
@@ -143,6 +237,8 @@ class MyEditor extends React.Component {
     return (
       <div id="editor" className="container">
        <Toolbar
+         COLOR={this.state.COLOR}
+         SIZE={this.state.SIZE}
          setInlineStyle={(styleName)=>this.setInlineStyle(styleName)}
          setBlockStyle={(styleName)=>this.setBlockStyle(styleName)}
          toggleStrictInlineStyle={(fontSize,propertyType)=>this.toggleStrictInlineStyle(fontSize,propertyType)}
