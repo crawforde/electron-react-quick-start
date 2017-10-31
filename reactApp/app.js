@@ -3,7 +3,8 @@ import React from 'react';
 import ReactDOM from 'react-dom';
 import { HashRouter, Route } from 'react-router-dom';
 import { Login, Register, UserValidation } from './Login';
-import { MyEditor } from './MyEditor';
+import { DocPortal } from './DocPortal';
+import MyEditor from './MyEditor';
 /* This can check if your electron app can communicate with your backend */
 // fetch('http://localhost:3000')
 // .then(resp => resp.text())
@@ -18,7 +19,8 @@ class Home extends React.Component {
           <Route exact path="/" component={UserValidation} />
           <Route path="/login" component={Login}/>
           <Route path="/register" component={Register}/>
-          <Route path="/docPortal" component={MyEditor}/>
+          <Route path="/docPortal/:username" component={DocPortal}/>
+          <Route path="/editorView" component={MyEditor}/>
       </div>
       </HashRouter>
     );

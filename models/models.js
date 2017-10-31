@@ -6,25 +6,32 @@ mongoose.connect(process.env.MONGODB_URI);
 var userSchema = new Schema({
   username: {
     type:String,
-    required: true
+    required: true,
+    unique: true
   },
   password: {
     type:String,
     required: true
   },
   firstName: String,
-  documents: {
-    type: Schema.Types.ObjectId,
-    ref: 'Doc'
-  }
+  documentIds: Array
+
 });
 var documentSchema = new Schema({
-  editors:{
-    type: Array
+  title: {
+    type: String,
+    required: true
   },
-  version:{
-    type: Array
+  password: {
+    type: String,
+    required: true
   },
+  ownerName: {
+    type: String,
+    required: true
+  },
+  collaboratorIds: Array,
+  version: Array,
   current: Boolean,
   text: String
 });
