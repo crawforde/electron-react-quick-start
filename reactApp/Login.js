@@ -49,7 +49,8 @@ class Login extends React.Component {
     .catch((err) => {console.log('Login Post request failed', err);});
   }
   render() {
-    return (this.state.redirect) ? (<Redirect to={'/docPortal'}/>) : (
+    return (this.state.redirect) ? (<Redirect to={'/docPortal'}/>) :
+    (
       <div>
         <h1>Login to FakeDocs!</h1>
         <Link to={'/register'}>Click here to Register :)</Link>
