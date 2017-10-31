@@ -1,8 +1,7 @@
 var mongoose = require('mongoose');
-var connect = process.env.MONGODB_URI;
 var Schema = mongoose.Schema;
 
-mongoose.connect(connect);
+mongoose.connect(process.env.MONGODB_URI);
 
 var userSchema = new Schema({
   username: {
@@ -13,8 +12,9 @@ var userSchema = new Schema({
     type:String,
     required: true
   },
+  firstName: String,
   documents: {
-    type: Schema.types.ObjectId,
+    type: Schema.Types.ObjectId,
     ref: 'Doc'
   }
 });

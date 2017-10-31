@@ -14,19 +14,28 @@ var User = models.User;
 var app = express();
 
 // view engine setup
+// view engine setup
+var hbs = require('express-handlebars')({
+  defaultLayout: 'main',
+  extname: '.hbs'
+});
+app.engine('hbs', hbs);
 app.set('views', path.join(__dirname, 'views'));
 app.set('view engine', 'hbs');
 
-app.use(logger('dev'));
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: false }));
-app.use(cookieParser());
-app.use(express.static(path.join(__dirname, 'public')));
+
 
 // Passport stuff here
 // YOUR CODE HERE
 var session = require('express-session');
-app.use(session({ secret: process.env.PASSPORT_SECRET }));
+app.use(session({
+  secret: process.env.PASSPORT_SECRET || 'fake secret'
+}));
+
+app.use(passport.initialize());
+app.use(passport.session());
 
 // Tell Passport how to set req.user
 passport.serializeUser(function(user, done) {
@@ -34,36 +43,29 @@ passport.serializeUser(function(user, done) {
 });
 
 passport.deserializeUser(function(id, done) {
-  User.findById(id, function(err, user) {
-    done(err, user);
-  });
+  User.findById(id, done);
 });
 
 // Tell passport how to read our user models
 passport.use(new LocalStrategy(function(username, password, done) {
   // Find the user with the given username
-  User.findOne({username, password}, function (err, user) {
+  User.findOne({ username: username, password: password }, function (err, user) {
     // if there's an error, finish trying to authenticate (auth failed)
     if (err) {
-      console.log(err);
+      console.log("passport authentication", err);
       return done(err);
     }
+
     // if no user present, auth failed
     if (!user) {
-      console.log(user);
       return done(null, false);
     }
-    // if passwords do not match, auth failed
-    if (user.password !== password) {
-      return done(null, false);
-    }
+
     // auth has has succeeded
     return done(null, user);
   });
 }));
 
-app.use(passport.initialize());
-app.use(passport.session());
 // Uncomment these out after you have implemented passport in step 1
 app.use('/', auth(passport));
 app.use('/', routes);
@@ -82,7 +84,7 @@ app.use(function(req, res, next) {
 if (app.get('env') === 'development') {
   app.use(function(err, req, res, next) {
     res.status(err.status || 500);
-    res.render('error', {
+    res.json({
       message: err.message,
       error: err
     });
@@ -93,7 +95,7 @@ if (app.get('env') === 'development') {
 // no stacktraces leaked to user
 app.use(function(err, req, res, next) {
   res.status(err.status || 500);
-  res.render('error', {
+  res.json({
     message: err.message,
     error: {}
   });
@@ -102,5 +104,3 @@ app.use(function(err, req, res, next) {
 app.listen(3000, function () {
   console.log('Backend server for Electron App running on port 3000!');
 });
-
-module.exports = app;

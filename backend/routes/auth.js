@@ -4,49 +4,33 @@ var models = require('../../models/models.js');
 var User = models.User;
 
 module.exports = function(passport) {
-
-  router.get('/', function(req, res){
-    if(!req.user){
-      res.redirect('/login');
-    }else{
-      res.redirect('/docPortal');
-    }
+  router.get('/', (req, res) => {
+    res.send('Backend handled');
   });
-
-  router.get('/register', function(req, res){
-    res.send('REgister page');
-  });
-
   router.post('/register', function(req, res){
-    if(req.body.password !== req.body.rpwd){
-      console.log('Password and repeated password do not match.');
-    }else{
-      var newUser = new User({
-        username: req.body.username,
-        password: req.body.password
-      });
-      newUser.save(function(err, result){
-        if(err){
-          console.log('Creating new user failed.');
-        }else{
-          res.redirect('/login');
-        }
-      });
-    }
-  });
+    var newUser = new User({
+      username: req.body.username,
+      password: req.body.password,
+      firstName: req.body.firstName
+    });
+    newUser.save(function(err, result){
+      if(err){
+        console.log('Creating new user failed.', err);
+      } else {
+        res.status(200).send("Success");
+      }
+    });
 
-  router.get('/login', function(req, res){
-    res.send('login');
   });
-
-  router.post('/login', passport.authenticate('local',
-    { successRedirect: '/docPortal',
-      failureRedirect: '/login'
-    }));
+  // traditional route handler, passed req/res
+  router.post('/login', passport.authenticate('local'), function(req, res) {
+    // If this function gets called, authentication was successful.
+    // `req.user` contains the authenticated user.
+    res.status(200).json({success: true});
+  });
 
   router.get('/logout', function(req, res){
     req.logout();
-    res.redirect('/login');
   });
 
 

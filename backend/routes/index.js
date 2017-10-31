@@ -3,12 +3,12 @@ var router = express.Router();
 var models = require('../../models/models');
 var Doc = models.Doc;
 /* GET home page. */
-router.post('/documents/new', function(req, res, next) {
-  var newDoc = new Doc({
-    editors: [req.user.id]
-  });
-  newDoc.save();
+router.get('/docPortal', function(req, res, next) {
+  // var newDoc = new Doc({
+  //   editors: [req.user.id]
+  // });
+  // newDoc.save();
+  res.send('got here!!');
 });
-
 
 module.exports = router;

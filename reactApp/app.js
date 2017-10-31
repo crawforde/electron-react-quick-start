@@ -1,26 +1,30 @@
 import 'babel-polyfill';
 import React from 'react';
 import ReactDOM from 'react-dom';
-import {Editor, EditorState} from 'draft-js';
+import { HashRouter, Route } from 'react-router-dom';
+import { Login, Register, UserValidation } from './Login';
+import { MyEditor } from './Toolbar';
 /* This can check if your electron app can communicate with your backend */
-fetch('http://localhost:3000')
-.then(resp => resp.text())
-.then(text => console.log(text))
-.catch(err => {throw err;});
+// fetch('http://localhost:3000')
+// .then(resp => resp.text())
+// .then(text => console.log(text))
+// .catch(err => {throw err;});
 
-class MyEditor extends React.Component {
-  constructor(props) {
-    super(props);
-    this.state = {editorState: EditorState.createEmpty()};
-    this.onChange = (editorState) => this.setState({editorState});
-  }
+class Home extends React.Component {
   render() {
     return (
-        <Editor editorState={this.state.editorState} onChange={this.onChange} />
+      <HashRouter>
+      <div>
+          <Route exact path="/" component={UserValidation} />
+          <Route path="/login" component={Login}/>
+          <Route path="/register" component={Register}/>
+          <Route path="/docPortal" component={MyEditor}/>
+      </div>
+      </HashRouter>
     );
   }
 }
 ReactDOM.render(
- <MyEditor />,
+  <Home />,
  document.getElementById('root')
 );
