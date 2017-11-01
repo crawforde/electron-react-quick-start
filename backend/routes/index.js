@@ -13,7 +13,9 @@ router.post('/docPortal/new', function(req, res, next) {
   newDoc.save((err, doc) => {
     if(err) throw new Error(err);
     User.findOne({username: req.body.username}, (err, user) => {
-      user.documents = [doc._id];
+      let newUserDoc = user.documents.slice();
+      newUserDoc.push(doc._id);
+      user.documents = newUserDoc;
       user.save();
       res.send(doc);
     });
@@ -42,8 +44,9 @@ router.post('/docPortal/collab', function(req, res, next) {
 });
 
 router.get('/docPortal/:username', function(req, res, next) {
-  User.find({username: req.params.username}).populate('documents').exec(
+  User.findOne({username: req.params.username}).populate('documents').exec(
     (err, user) => {
+      console.log(user.documents);
       res.send(user.documents);
     }
   );
