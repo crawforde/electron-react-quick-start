@@ -1,6 +1,8 @@
 import 'babel-polyfill';
 import React from 'react';
 import { Link } from 'react-router-dom';
+import { Redirect } from 'react-router';
+import { DocPortal } from './DocPortal';
 import axios from 'axios';
 /* This can check if your electron app can communicate with your backend */
 // fetch('http://localhost:3000')
@@ -25,7 +27,8 @@ class Login extends React.Component {
     super(props);
     this.state = {
       username: '',
-      password: ''
+      password: '',
+      redirect: false
     };
   }
   onNameChange(e){
@@ -43,11 +46,12 @@ class Login extends React.Component {
       username: this.state.username,
       password: this.state.password
     })
-    .then(() => this.props.history.push(`/docPortal/${this.state.username}`))
+    .then(() => this.setState({redirect: true}))
     .catch((err) => {console.log('Login Post request failed', err);});
   }
   render() {
-    return(
+    return (this.state.redirect) ? (<Redirect to={`/docPortal/${this.state.username}`}/>) :
+    (
       <div>
         <h1>Login to FakeDocs!</h1>
         <Link to={'/register'}>Click here to Register :)</Link>
@@ -67,7 +71,8 @@ class Register extends React.Component {
     this.state = {
       username: '',
       password: '',
-      firstName: ''
+      firstName: '',
+      redirect: false
     };
   }
   onUsernameChange(e){
@@ -91,12 +96,12 @@ class Register extends React.Component {
       password: this.state.password,
       firstName: this.state.firstName
     })
-    .then(() => this.props.history.push('/login'))
+    .then(() => this.setState({redirect: true}))
     .catch((err) => {console.log('Register Post request failed', err);});
   }
   render() {
 
-    return(
+    return (this.state.redirect) ? (<Redirect to={'/login'}/>) : (
       <div>
         <h1>Register for FakeDocs!</h1>
         <Link to={'/login'}>Click here to Login</Link>

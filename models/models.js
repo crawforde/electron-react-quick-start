@@ -14,8 +14,10 @@ var userSchema = new Schema({
     required: true
   },
   firstName: String,
-  documentIds: Array
-
+  documents:[{
+    type: Schema.Types.ObjectId,
+    ref: 'Doc'
+  }]
 });
 var documentSchema = new Schema({
   title: {
@@ -26,16 +28,13 @@ var documentSchema = new Schema({
     type: String,
     required: true
   },
-  ownerName: {
-    type: String,
-    required: true
-  },
-  collaboratorIds: Array,
+  collaborators: Array,
   version: Array,
   current: Boolean,
-  text: String
+  text: Object
 });
 
 var User = mongoose.model('User', userSchema);
 var Doc = mongoose.model('Doc', documentSchema);
+
 module.exports = { User, Doc };
