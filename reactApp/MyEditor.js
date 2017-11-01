@@ -1,5 +1,5 @@
 import React from 'react';
-import {Editor, EditorState, RichUtils, Modifier, convertToRaw, convertFromRaw, ContentState } from 'draft-js';
+import {Editor, EditorState, RichUtils, Modifier, convertToRaw, convertFromRaw } from 'draft-js';
 import Toolbar from './Toolbar';
 import Save from './Save';
 import History from './History';
