@@ -266,7 +266,7 @@ class MyEditor extends React.Component {
       });
       this.setState({
         history: newHistory,
-        version: newHistory.length - 1
+        currentVersion: newHistory.length - 1
       });
     })
     .catch((err)=>{
