@@ -25,14 +25,15 @@ class MyEditor extends React.Component {
     this.handleSelectionEvent = this.handleSelectionEvent.bind(this);
   }
 
-/*
   componentWillMount(){
     axios.get(`${process.env.DOMAIN}/editorView/${this.state.docId}`)
-    .then((doc)=>{
-
+    .then((resp)=>{
+      console.log('Success',resp);
     })
+    .catch((err)=>{
+      console.log('Error:', err);
+    });
   }
-*/
 
   onChange(newState){
 
