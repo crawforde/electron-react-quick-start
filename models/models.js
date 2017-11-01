@@ -1,5 +1,5 @@
 var mongoose = require('mongoose');
-import { EditorState } from 'draft-js';
+var { EditorState } = require('draft-js');
 var Schema = mongoose.Schema;
 mongoose.connect(process.env.MONGODB_URI);
 
