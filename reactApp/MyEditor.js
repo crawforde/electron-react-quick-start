@@ -1,5 +1,5 @@
 import React from 'react';
-import {Editor, EditorState, RichUtils, Modifier} from 'draft-js';
+import {Editor, EditorState, RichUtils, Modifier, convertToRaw, convertFromRaw } from 'draft-js';
 import Toolbar from './Toolbar';
 import Save from './Save';
 import History from './History';
@@ -18,6 +18,8 @@ class MyEditor extends React.Component {
     this.state = {
       docId: pathname.pop(),
       editorState: EditorState.createEmpty(),
+      history: [{state : null , timeStamp : null}],
+      currentVersion: 0,
       COLOR: 'mixed',
       SIZE: 'mixed'
     };
@@ -30,7 +32,15 @@ class MyEditor extends React.Component {
   componentDidMount(){
     axios.get(`${SERVER_URL}/editorView/${this.state.docId}`)
     .then((resp)=>{
-      console.log('Success',resp);
+      var history = resp.data.version.map((rawContent)=>EditorState.createWithContent(convertFromRaw(rawContent)));
+      console.log(history[history.length-1].state);
+      console.log(EditorState.createWithContent(history[history.length - 1].state.getCurrentContent()));
+      console.log(this.state.editorState);
+      this.setState({
+        history,
+        editorState: EditorState.createWithContent(history[history.length - 1].state.getCurrentContent()),
+        currentVersion: history.length - 1
+      });
     })
     .catch((err)=>{
       console.log('Error:', err);
@@ -239,7 +249,36 @@ class MyEditor extends React.Component {
   }
 
   onSave(evt){
-    console.log('Saved!');
+    evt.preventDefault();
+    var timeStamp = new Date();
+    var saveState = Object.assign({}, this.state.editorState);
+    axios.post(`${SERVER_URL}/editorView/${this.state.docId}/save`,{
+      newVersion: {
+        timeStamp,
+        state: saveState
+      }
+    })
+    .then(()=>{
+      var newHistory = this.state.history.slice();
+      newHistory.push({
+        timeStamp,
+        state: saveState
+      });
+      this.setState({
+        history: newHistory,
+        version: newHistory.length - 1
+      });
+    })
+    .catch((err)=>{
+      console.log('Error:',err);
+    });
+  }
+
+  changeVersion(newVersion){
+    this.setState({
+      editorState: Object.assign({}, history[newVersion].state),
+      currentVersion: newVersion
+    });
   }
 
   render() {
@@ -263,7 +302,7 @@ class MyEditor extends React.Component {
          blockStyleFn={this.blockStyleFn}
        />
        <Save onSave={(evt)=>this.onSave(evt)}/>
-       <History versions={['yesterday','today']}/>
+       <History versions={this.state.history} currentVersion={this.state.currentVersion} changeVersion={(newVersion)=>this.changeVersion(newVersion)}/>
      </div>
     );
   }
