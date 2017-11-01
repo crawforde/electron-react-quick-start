@@ -95,6 +95,8 @@ class Register extends React.Component {
       username: this.state.username,
       password: this.state.password,
       firstName: this.state.firstName
+    }, {
+      withCredentials: true
     })
     .then(() => this.setState({redirect: true}))
     .catch((err) => {console.log('Register Post request failed', err);});
