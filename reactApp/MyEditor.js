@@ -12,10 +12,9 @@ class MyEditor extends React.Component {
     super(props);
     var pathname = props.location.pathname;
     pathname = pathname.split('/');
-    pathname.splice(0,2);
 
     this.state = {
-      docId: pathname.length > 0 ? pathname.pop() : 'TEST',
+      docId: pathname.pop(),
       editorState: EditorState.createEmpty(),
       COLOR: 'mixed',
       SIZE: 'mixed'
