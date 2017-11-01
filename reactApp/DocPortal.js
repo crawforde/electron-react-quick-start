@@ -1,7 +1,6 @@
 import 'babel-polyfill';
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { Redirect } from 'react-router';
 import axios from 'axios';
 
 class DocPortal extends React.Component {
@@ -20,7 +19,10 @@ class DocPortal extends React.Component {
   }
   componentWillMount(){
     axios.get('http://localhost:3000' + this.state.pathname)
-    .then((res) => this.setState({docs: res.data}))
+    .then((res) => {
+      console.log('component will mount', res);
+      this.setState({docs: res.data});
+    })
     .catch((err) => {console.log('DocPortal GET request failed', err);});
   }
   onTitleChange(e){
@@ -49,8 +51,11 @@ class DocPortal extends React.Component {
       password: this.state.password,
       username: this.state.username
     })
-    .then((doc) => this.setState({newDocPathname: `/editorView/${doc._id}`}))
-    .then(() => this.setState({redirect: true}))
+    .then((doc) => {
+      let docs = this.state.docs.slice();
+      docs.push(doc);
+      this.setState({docs: docs}, this.forceUpdate());
+    })
     .catch((err) => {console.log('new Document Post request failed', err);});
   }
   newCollab(){
@@ -67,14 +72,14 @@ class DocPortal extends React.Component {
     .catch((err) => {console.log('new Document Post request failed', err);});
   }
   render() {
-    return (this.state.redirect) ? (<Redirect to={this.state.newDocPathname}/>) : (
+    return (
       <div>
         <input type='text' onChange={(e) => this.onTitleChange(e)} placeholder="New Document Title" />
         <input type='password' onChange={(e) => this.onPasswordChange(e)} placeholder="Password" />
         <button onClick={() => this.newDocument()}>Create New Document</button>
         <div style={{border: '2px solid lightpink', height: '250px'}}>
           {
-            [...this.state.docs].map((doc) => <Link to={`/editorView/${doc._id}`}>{doc.title}</Link>)
+            this.state.docs.map((doc) => <p><Link to={`/editorView/${doc._id}`}>{doc.title}</Link></p>)
           }
         </div>
         <input type='text' onChange={(e) => this.onCollabChange(e)} placeholder="New Collaboration Title" />

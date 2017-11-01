@@ -109,7 +109,7 @@ class Register extends React.Component {
           <input type='text' onChange={(e) => this.onFirstNameChange(e)} placeholder="First Name" />
           <input type='text' onChange={(e) => this.onUsernameChange(e)} placeholder="Username" />
           <input type='password' onChange={(e) => this.onPasswordChange(e)} placeholder="Password" />
-          <button className='btn btn-warning' onClick={() => this.register()}>Register</button>
+          <button onClick={() => this.register()}>Register</button>
         </div>
       </div>
     );
