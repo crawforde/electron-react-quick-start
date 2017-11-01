@@ -52,7 +52,10 @@ router.get('/docPortal/:username', function(req, res, next) {
 });
 
 router.get('/editorView/:docId', function(req, res, next) {
-  res.send('got it');
+  Doc.findById(req.params.docId, (err, doc) => {
+    if(err) res.status(402).error(err);
+    res.send(doc);
+  });
 });
 
 module.exports = router;
