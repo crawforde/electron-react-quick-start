@@ -41,9 +41,9 @@ class MyEditor extends React.Component {
         editorState: EditorState.createWithContent(history[history.length - 1].state.getCurrentContent()),
         currentVersion: history.length - 1
       },()=>{
-        console.log(this.state.history[this.state.currentVersion.state]);
+        console.log(this.state.history[this.state.currentVersion].state);
         console.log(this.state.editorState);
-        console.log(this.state.history[this.state.currentVersion.state]===this.state.editorState);
+        console.log(this.state.history[this.state.currentVersion].state===this.state.editorState);
       });
     })
     .catch((err)=>{

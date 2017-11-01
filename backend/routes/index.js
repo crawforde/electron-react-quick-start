@@ -65,6 +65,7 @@ router.post('/editorView/:docId/save', function(req, res, next) {
     newVersion.push(req.body.newVersion);
     doc.version = newVersion;
     doc.save();
+    res.status(200).send('Saved');
   });
 });
 module.exports = router;
