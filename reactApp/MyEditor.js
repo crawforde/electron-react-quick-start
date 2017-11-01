@@ -249,7 +249,7 @@ class MyEditor extends React.Component {
   }
 
   onSave(evt){
-    var timeStamp = new Date();
+    var timeStamp = new Date().toString();
     var saveState = EditorState.createWithContent(this.state.editorState.getCurrentContent());
     var saveStateJSON = JSON.stringify(convertToRaw(saveState.getCurrentContent()));
     axios.post(`${SERVER_URL}/editorView/${this.state.docId}/save`,{
