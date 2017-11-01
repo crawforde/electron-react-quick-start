@@ -21,24 +21,23 @@ class DocPortal extends React.Component {
     })
     .catch((err) => {console.log('DocPortal GET request failed', err);});
   }
-  componentDidUpdate(){
-    axios.get('http://localhost:3000' + this.state.pathname)
-    .then((res) => {
-      this.setState({docs: res.data});
-    })
-    .catch((err) => {console.log('DocPortal GET request failed', err);});
+  newDocList(doc){
+    this.setState({
+      docs: [...this.state.docs, doc]
+    });
   }
+
   render() {
     let key = 0;
     return (
       <div>
-        <AddDocument newDoc={true} username={this.state.username} docs={this.state.docs}/>
+        <AddDocument newDoc={true} username={this.state.username} newDocList={(doc) => this.newDocList(doc)} />
         <div style={{border: '2px solid lightpink'}}>
           {
             this.state.docs.map((doc) => {key++; return <p key={key}><Link to={`/editorView/${doc._id}`}>{doc.title}</Link></p>;})
           }
         </div>
-        <AddDocument newDoc={false} username={this.state.username} docs={this.state.docs}/>
+        <AddDocument newDoc={false} username={this.state.username} newDocList={(doc) => this.newDocList(doc)}/>
       </div>
     );
   }

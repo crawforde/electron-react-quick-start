@@ -1,5 +1,5 @@
 var mongoose = require('mongoose');
-var { EditorState } = require('draft-js');
+var { EditorState, convertToRaw } = require('draft-js');
 var Schema = mongoose.Schema;
 mongoose.connect(process.env.MONGODB_URI);
 
@@ -34,7 +34,7 @@ var documentSchema = new Schema({
     default: [
       {
         timeStamp: new Date(),
-        state: EditorState.createEmpty()
+        state: convertToRaw(EditorState.createEmpty().getCurrentContent())
       }
     ]
   },

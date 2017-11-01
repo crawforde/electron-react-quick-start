@@ -30,8 +30,9 @@ class AddDocument extends React.Component {
       password: this.refs.password.value,
       username: this.props.username
     })
-    .then(() => {
+    .then((resp) => {
       this.refs.title.value = '';
+      this.props.newDocList(resp.data);
     })
     .catch((err) => {console.log('new Document Post request failed', err);});
   }
@@ -43,8 +44,9 @@ class AddDocument extends React.Component {
       password: this.refs.password.value,
       username: this.props.username
     })
-    .then(() => {
+    .then((resp) => {
       this.refs.title.value = '';
+      this.props.newDocList(resp.data);
     })
     .catch((err) => {console.log('new Document Post request failed', err);});
   }
