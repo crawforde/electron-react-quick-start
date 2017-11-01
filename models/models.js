@@ -3,6 +3,8 @@ var { EditorState, convertToRaw } = require('draft-js');
 var Schema = mongoose.Schema;
 mongoose.connect(process.env.MONGODB_URI);
 
+const newState = JSON.stringify(convertToRaw(EditorState.createEmpty().getCurrentContent()));
+
 var userSchema = new Schema({
   username: {
     type:String,
@@ -34,7 +36,7 @@ var documentSchema = new Schema({
     default: [
       {
         timeStamp: new Date(),
-        state: convertToRaw(EditorState.createEmpty().getCurrentContent())
+        state: newState
       }
     ]
   },
