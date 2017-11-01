@@ -26,7 +26,6 @@ class DocPortal extends React.Component {
       docs: [...this.state.docs, doc]
     });
   }
-
   render() {
     let key = 0;
     return (
