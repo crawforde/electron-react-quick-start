@@ -17,11 +17,6 @@ class DocPortal extends React.Component {
   componentWillMount(){
     axios.get('http://localhost:3000' + this.state.pathname)
     .then((res) => {
-<<<<<<< HEAD
-      //console.log('component will mount', res);
-=======
-      // console.log('component will mount', res);
->>>>>>> a583431464e6943630240bc8dc795286e85a45db
       this.setState({docs: res.data});
     })
     .catch((err) => {console.log('DocPortal GET request failed', err);});
@@ -29,11 +24,7 @@ class DocPortal extends React.Component {
   componentDidUpdate(){
     axios.get('http://localhost:3000' + this.state.pathname)
     .then((res) => {
-<<<<<<< HEAD
-      //console.log('component will mount', res);
-=======
-      // console.log('component will mount', res);
->>>>>>> a583431464e6943630240bc8dc795286e85a45db
+      console.log('updates');
       this.setState({docs: res.data});
     })
     .catch((err) => {console.log('DocPortal GET request failed', err);});

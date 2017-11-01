@@ -22,7 +22,8 @@ class AddDocument extends React.Component {
   modalClose(){
     this.setState({modalOpen: false});
   }
-  newDocument(){
+  newDocument(e){
+    e.preventDefault();
     this.modalClose();
     axios.post('http://localhost:3000/docPortal/new', {
       title: this.refs.title.value,
@@ -34,7 +35,8 @@ class AddDocument extends React.Component {
     })
     .catch((err) => {console.log('new Document Post request failed', err);});
   }
-  newCollab(){
+  newCollab(e){
+    e.preventDefault();
     this.modalClose();
     axios.post('http://localhost:3000/docPortal/collab', {
       id: this.refs.title.value,
@@ -63,7 +65,7 @@ class AddDocument extends React.Component {
           >
             <h2>Type in password to collaborate.</h2>
             <input type='password' ref="password" placeholder="Password" />
-            <button onClick={(this.props.newDoc) ? () => this.newDocument() : () => this.newCollab()}>{(this.props.newDoc) ? 'Set password' : 'Verify password'}</button>
+            <button onClick={(this.props.newDoc) ? (e) => this.newDocument(e) : (e) => this.newCollab(e)}>{(this.props.newDoc) ? 'Set password' : 'Verify password'}</button>
             <button onClick={() => this.modalClose()}>Cancel</button>
           </Modal>
         </div>
