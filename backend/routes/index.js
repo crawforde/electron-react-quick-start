@@ -42,7 +42,7 @@ router.post('/docPortal/collab', function(req, res, next) {
 });
 
 router.get('/docPortal/:username', function(req, res, next) {
-  User.findOne({username: req.params.username}).populate('documents').exec(
+  User.find({username: req.params.username}).populate('documents').exec(
     (err, user) => {
       res.send(user.documents);
     }
