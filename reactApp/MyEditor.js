@@ -1,5 +1,5 @@
 import React from 'react';
-import {Editor, EditorState, RichUtils, Modifier, convertToRaw, convertFromRaw } from 'draft-js';
+import {Editor, EditorState, RichUtils, Modifier, convertToRaw, convertFromRaw, ContentState } from 'draft-js';
 import Toolbar from './Toolbar';
 import Save from './Save';
 import History from './History';
@@ -32,10 +32,11 @@ class MyEditor extends React.Component {
   componentDidMount(){
     axios.get(`${SERVER_URL}/editorView/${this.state.docId}`)
     .then((resp)=>{
-      var history = resp.data.version.map((rawContent)=>EditorState.createWithContent(convertFromRaw(rawContent)));
-      console.log(history[history.length-1].state);
-      console.log(EditorState.createWithContent(history[history.length - 1].state.getCurrentContent()));
-      console.log(this.state.editorState);
+      var history = resp.data.version.map((version)=>({
+        state: EditorState.createWithContent(convertFromRaw(JSON.parse(version.state))),
+        timeStamp: version.timeStamp
+      }));
+      console.log(history[0]);
       this.setState({
         history,
         editorState: EditorState.createWithContent(history[history.length - 1].state.getCurrentContent()),
