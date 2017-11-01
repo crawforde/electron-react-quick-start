@@ -1,5 +1,5 @@
 import React from 'react';
-import {Editor, EditorState, RichUtils, Modifier, convertToRaw, convertFromRaw, ContentState } from 'draft-js';
+import {Editor, EditorState, RichUtils, Modifier, convertToRaw, convertFromRaw } from 'draft-js';
 import Toolbar from './Toolbar';
 import Save from './Save';
 import History from './History';
@@ -40,10 +40,6 @@ class MyEditor extends React.Component {
         history,
         editorState: EditorState.createWithContent(history[history.length - 1].state.getCurrentContent()),
         currentVersion: history.length - 1
-      },()=>{
-        console.log(this.state.history[this.state.currentVersion.state]);
-        console.log(this.state.editorState);
-        console.log(this.state.history[this.state.currentVersion.state]===this.state.editorState);
       });
     })
     .catch((err)=>{
