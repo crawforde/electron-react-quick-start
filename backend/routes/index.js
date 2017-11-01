@@ -25,7 +25,7 @@ router.post('/docPortal/new', function(req, res, next) {
 router.post('/docPortal/collab', function(req, res, next) {
   Doc.findById(req.body.id, (err, doc) => {
     if(err) throw new Error(err);
-    console.log(doc);
+    // console.log(doc);
     if(doc.password === req.body.password){
       let docCol = doc.collaborators.slice();
       docCol.push(req.body.username);
@@ -46,6 +46,10 @@ router.post('/docPortal/collab', function(req, res, next) {
 router.get('/docPortal/:username', function(req, res, next) {
   User.findOne({username: req.params.username}).populate('documents').exec(
     (err, user) => {
+<<<<<<< HEAD
+=======
+      // console.log(user.documents);
+>>>>>>> a583431464e6943630240bc8dc795286e85a45db
       res.send(user.documents);
     }
   );

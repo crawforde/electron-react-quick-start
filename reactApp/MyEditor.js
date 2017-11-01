@@ -6,6 +6,8 @@ import History from './History';
 import { styleMap } from './editorStyles';
 import axios from 'axios';
 
+const SERVER_URL = "http://localhost:3000";
+
 class MyEditor extends React.Component {
 
   constructor(props) {
@@ -25,14 +27,15 @@ class MyEditor extends React.Component {
     this.handleSelectionEvent = this.handleSelectionEvent.bind(this);
   }
 
-/*
-  componentWillMount(){
-    axios.get(`${process.env.DOMAIN}/editorView/${this.state.docId}`)
-    .then((doc)=>{
-
+  componentDidMount(){
+    axios.get(`${SERVER_URL}/editorView/${this.state.docId}`)
+    .then((resp)=>{
+      console.log('Success',resp);
     })
+    .catch((err)=>{
+      console.log('Error:', err);
+    });
   }
-*/
 
   onChange(newState){
 
@@ -243,7 +246,7 @@ class MyEditor extends React.Component {
     return (
       <div id="editor">
         <div id="doc-id">
-          <div>Shareable ID: </div><div><input value={this.state.docId} onFocus={(evt)=>evt.target.select()}/></div>
+          <div>Shareable ID: </div><div><input readOnly={true} value={this.state.docId} onFocus={(evt)=>evt.target.select()}/></div>
         </div>
        <Toolbar
          COLOR={this.state.COLOR}
