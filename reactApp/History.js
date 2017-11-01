@@ -4,13 +4,16 @@ class History extends React.Component {
   constructor(props) {
     super(props);
     this.state={
-      currentVersion: props.currentVersion
+      currentVersion: props.currentVersion,
+      history: props.versions.map((version,index)=>(version.timeStamp))
     };
   }
 
   componentWillReceiveProps(newProps){
+    // console.log(newProps);
     this.setState({
-      currentVersion: newProps.currentVersion
+      currentVersion: newProps.currentVersion,
+      history: newProps.versions.map((version,index)=>(version.timeStamp))
     });
   }
 
@@ -19,9 +22,7 @@ class History extends React.Component {
       <div id="history-bar">
         <span className="footer-label">Version</span>
         <select value={this.state.currentVersion} onChange={(evt)=>this.props.changeVersion(evt.target.value)}>
-          {this.props.versions.map((version,index)=>{
-            return (<option key={index} value={index}>{version.timeStamp}</option>);
-          })}
+          {this.state.history.map((dateString,index)=><option key={index} value={index}>{dateString}</option>)}
         </select>
       </div>
     );

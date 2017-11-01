@@ -14,7 +14,7 @@ class MyEditor extends React.Component {
     super(props);
     var pathname = props.location.pathname;
     pathname = pathname.split('/');
-
+    this.saving = false;
     this.state = {
       docId: pathname.pop(),
       editorState: EditorState.createEmpty(),
@@ -40,6 +40,10 @@ class MyEditor extends React.Component {
         history,
         editorState: EditorState.createWithContent(history[history.length - 1].state.getCurrentContent()),
         currentVersion: history.length - 1
+      },()=>{
+        console.log(this.state.history[this.state.currentVersion.state]);
+        console.log(this.state.editorState);
+        console.log(this.state.history[this.state.currentVersion.state]===this.state.editorState);
       });
     })
     .catch((err)=>{
@@ -249,34 +253,37 @@ class MyEditor extends React.Component {
   }
 
   onSave(evt){
-    var timeStamp = new Date().toString();
-    var saveState = EditorState.createWithContent(this.state.editorState.getCurrentContent());
-    var saveStateJSON = JSON.stringify(convertToRaw(saveState.getCurrentContent()));
-    axios.post(`${SERVER_URL}/editorView/${this.state.docId}/save`,{
-      newVersion: {
-        timeStamp,
-        state: saveStateJSON
-      }
-    })
-    .then(()=>{
-      var newHistory = this.state.history.slice();
-      newHistory.push({
-        timeStamp,
-        state: saveState
+    if(!this.saving){
+      this.saving = true;
+      var timeStamp = new Date().toString();
+      var saveState = EditorState.createWithContent(this.state.editorState.getCurrentContent());
+      var saveStateJSON = JSON.stringify(convertToRaw(saveState.getCurrentContent()));
+      axios.post(`${SERVER_URL}/editorView/${this.state.docId}/save`,{
+        newVersion: {
+          timeStamp,
+          state: saveStateJSON
+        }
+      })
+      .then(()=>{
+        var newHistory = this.state.history.slice();
+        newHistory.push({
+          timeStamp,
+          state: saveState
+        });
+        this.setState({
+          history: newHistory,
+          currentVersion: newHistory.length - 1
+        },()=>this.saving = false);
+      })
+      .catch((err)=>{
+        console.log('Error:',err);
       });
-      this.setState({
-        history: newHistory,
-        version: newHistory.length - 1
-      });
-    })
-    .catch((err)=>{
-      console.log('Error:',err);
-    });
+    }
   }
 
   changeVersion(newVersion){
     this.setState({
-      editorState: Object.assign({}, history[newVersion].state),
+      editorState: EditorState.createWithContent(this.state.history[newVersion].state.getCurrentContent()),
       currentVersion: newVersion
     });
   }
