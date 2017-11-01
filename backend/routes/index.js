@@ -58,4 +58,13 @@ router.get('/editorView/:docId', function(req, res, next) {
   });
 });
 
+router.post('/editorView/:docId/save', function(req, res, next) {
+  Doc.findById(req.params.docId, (err, doc) => {
+    if(err) res.status(402).send(err);
+    let newVersion = doc.version.slice();
+    newVersion.push(req.body.newVersion);
+    doc.version = newVersion;
+    doc.save();
+  });
+});
 module.exports = router;
