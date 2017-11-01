@@ -36,7 +36,6 @@ class MyEditor extends React.Component {
         state: EditorState.createWithContent(convertFromRaw(JSON.parse(version.state))),
         timeStamp: version.timeStamp
       }));
-      console.log(history[0]);
       this.setState({
         history,
         editorState: EditorState.createWithContent(history[history.length - 1].state.getCurrentContent()),
@@ -250,13 +249,13 @@ class MyEditor extends React.Component {
   }
 
   onSave(evt){
-    evt.preventDefault();
     var timeStamp = new Date();
-    var saveState = Object.assign({}, this.state.editorState);
+    var saveState = EditorState.createWithContent(this.state.editorState.getCurrentContent());
+    var saveStateJSON = JSON.stringify(convertToRaw(saveState.getCurrentContent()));
     axios.post(`${SERVER_URL}/editorView/${this.state.docId}/save`,{
       newVersion: {
         timeStamp,
-        state: saveState
+        state: saveStateJSON
       }
     })
     .then(()=>{
