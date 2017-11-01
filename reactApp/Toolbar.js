@@ -1,6 +1,6 @@
 import React from 'react';
-
-// const fonts = [8,10,12,14,16,18,20,22,24,26,28,36,48,72];
+import { styleLabels }  from './editorStyles';
+const labelKeys = Object.keys(styleLabels);
 
 class Toolbar extends React.Component {
   constructor(props) {
@@ -26,47 +26,55 @@ class Toolbar extends React.Component {
 
   render() {
     return (
-      <div id="toolbar" className="row">
-       <button onClick={()=>this.props.setInlineStyle('BOLD')} type = "button" className = "btn btn-toolbar col-xs-1">
+      <div id="toolbar">
+       <button onClick={()=>this.props.setInlineStyle('BOLD')} type = "button" className = "btn btn-toolbar">
          <span className="fa fa-bold"/>
        </button>
-       <button onClick={()=>this.props.setInlineStyle('ITALIC')} type = "button" className = "btn btn-toolbar col-xs-1">
+       <button onClick={()=>this.props.setInlineStyle('ITALIC')} type = "button" className = "btn btn-toolbar">
          <span className="fa fa-italic"/>
        </button>
-       <button onClick={()=>this.props.setInlineStyle('UNDERLINE')} type = "button" className = "btn btn-toolbar col-xs-1">
+       <button onClick={()=>this.props.setInlineStyle('UNDERLINE')} type = "button" className = "btn btn-toolbar">
          <span className="fa fa-underline"/>
        </button>
-       <button onClick={()=>this.props.setBlockStyle('TEXT_LEFT')} type = "button" className = "btn btn-toolbar col-xs-1">
+       <button onClick={()=>this.props.setBlockStyle('TEXT_LEFT')} type = "button" className = "btn btn-toolbar">
          <span className="fa fa-align-left"/>
        </button>
-       <button onClick={()=>this.props.setBlockStyle('TEXT_CENTER')} type = "button" className = "btn btn-toolbar col-xs-1">
+       <button onClick={()=>this.props.setBlockStyle('TEXT_CENTER')} type = "button" className = "btn btn-toolbar">
          <span className="fa fa-align-center"/>
        </button>
-       <button onClick={()=>this.props.setBlockStyle('TEXT_RIGHT')} type = "button" className = "btn btn-toolbar col-xs-1">
+       <button onClick={()=>this.props.setBlockStyle('TEXT_RIGHT')} type = "button" className = "btn btn-toolbar">
          <span className="fa fa-align-right"/>
        </button>
-       <button onClick={()=>this.props.setBlockStyle('unordered-list-item')} type = "button" className = "btn btn-toolbar col-xs-1">
+       <button onClick={()=>this.props.setBlockStyle('unordered-list-item')} type = "button" className = "btn btn-toolbar">
          <span className="fa fa-list-ul"/>
        </button>
-       <button onClick={()=>this.props.setBlockStyle('ordered-list-item')} type = "button" className = "btn btn-toolbar col-xs-1">
+       <button onClick={()=>this.props.setBlockStyle('ordered-list-item')} type = "button" className = "btn btn-toolbar">
          <span className="fa fa-list-ol"/>
        </button>
-       <select value={this.state.SIZE} onChange={(evt)=>this.handleStrictInlineStyle(evt.target.value,'SIZE')}>
-          <option value={'mixed'}>- font size -</option>
-          <option value={'SIZE_12'}> Small </option>
-          <option value={'SIZE_18'}> Medium </option>
-          <option value={'SIZE_36'}> Large </option>
-       </select>
-       <select value={this.state.COLOR} onChange={(evt)=>this.handleStrictInlineStyle(evt.target.value,'COLOR')}>
-          <option value={'mixed'}>- font color -</option>
-          <option value={'COLOR_RED'}> Red </option>
-          <option value={'COLOR_ORANGE'}> Orange </option>
-          <option value={'COLOR_YELLOW'}> Yellow </option>
-          <option value={'COLOR_GREEN'}> Green </option>
-          <option value={'COLOR_BLUE'}> Blue </option>
-          <option value={'COLOR_INDIGO'}> Indigo </option>
-          <option value={'COLOR_VIOLET'}> Violet </option>
-       </select>
+       <div className="select-toolbar">
+         <select value={this.state.SIZE} onChange={(evt)=>this.handleStrictInlineStyle(evt.target.value,'SIZE')}>
+            <option key={0} value={'mixed'}>- font size -</option>
+            {labelKeys.map((key,index)=>{
+              var type = key.split('_')[0];
+              if(type==="SIZE"){
+                return (<option key={index+1} value={key}> {styleLabels[key]} </option>);
+              }
+              return '';
+            })}
+         </select>
+       </div>
+       <div className="select-toolbar">
+         <select value={this.state.COLOR} onChange={(evt)=>this.handleStrictInlineStyle(evt.target.value,'COLOR')}>
+            <option key={0} value={'mixed'}>- font color -</option>
+            {labelKeys.map((key,index)=>{
+              var type = key.split('_')[0];
+              if(type==="COLOR"){
+                return (<option key={index+1} value={key}> {styleLabels[key]} </option>);
+              }
+              return '';
+            })}
+          </select>
+        </div>
       </div>
     );
   }

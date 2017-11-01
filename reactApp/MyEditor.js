@@ -1,46 +1,22 @@
 import React from 'react';
 import {Editor, EditorState, RichUtils, Modifier} from 'draft-js';
 import Toolbar from './Toolbar';
-
-const styleMap = {
-  'SIZE_12': {
-    fontSize: '12px'
-  },
-  'SIZE_18': {
-    fontSize: '18px'
-  },
-  'SIZE_36': {
-    fontSize: '36px'
-  },
-  'COLOR_RED': {
-    color: 'rgba(255, 0, 0, 1.0)',
-  },
-  'COLOR_ORANGE': {
-    color: 'rgba(255, 127, 0, 1.0)',
-  },
-  'COLOR_YELLOW': {
-    color: 'rgba(180, 180, 0, 1.0)',
-  },
-  'COLOR_GREEN': {
-    color: 'rgba(0, 180, 0, 1.0)',
-  },
-  'COLOR_BLUE': {
-    color: 'rgba(0, 0, 255, 1.0)',
-  },
-  'COLOR_INDIGO': {
-    color: 'rgba(75, 0, 130, 1.0)',
-  },
-  'COLOR_VIOLET': {
-    color: 'rgba(127, 0, 255, 1.0)',
-  }
-};
+import Save from './Save';
+import History from './History';
+import { styleMap } from './editorStyles';
+import axios from 'axios';
 
 class MyEditor extends React.Component {
 
   constructor(props) {
     super(props);
+    var pathname = props.location.pathname;
+    pathname = pathname.split('/');
+    pathname.splice(0,2);
+
     this.state = {
-      editorState: props.editorState ? JSON.parse(props.editorState) : EditorState.createEmpty(),
+      docId: pathname.length > 0 ? pathname.pop() : 'TEST',
+      editorState: EditorState.createEmpty(),
       COLOR: 'mixed',
       SIZE: 'mixed'
     };
@@ -49,6 +25,15 @@ class MyEditor extends React.Component {
     this.blockStyleFn = this.blockStyleFn.bind(this);
     this.handleSelectionEvent = this.handleSelectionEvent.bind(this);
   }
+
+/*
+  componentWillMount(){
+    axios.get(`${process.env.DOMAIN}/editorView/${this.state.docId}`)
+    .then((doc)=>{
+
+    })
+  }
+*/
 
   onChange(newState){
     const currentContentState = this.state.editorState.getCurrentContent();
@@ -61,7 +46,9 @@ class MyEditor extends React.Component {
       var end = selectionState.getEndOffset();
       var chars = contentBlock.getCharacterList()._tail;
       if(chars){
-        var charStyles = chars.array.map((metadata)=>metadata.getStyle()._map._list);
+        var charStyles = chars.array.map((metadata)=>{
+          return metadata.getStyle() ? metadata.getStyle()._map._list : metadata;
+        });
         charStyles = charStyles.slice(start,end);
         charStyles = charStyles.map((list)=>{
           if(list._tail){
@@ -233,9 +220,14 @@ class MyEditor extends React.Component {
     }
   }
 
+  onSave(evt){
+    console.log('Saved!');
+  }
+
   render() {
     return (
       <div id="editor" className="container">
+        <h2>Shareable Document ID: {this.state.docId}</h2>
        <Toolbar
          COLOR={this.state.COLOR}
          SIZE={this.state.SIZE}
@@ -250,6 +242,8 @@ class MyEditor extends React.Component {
          onChange={this.onChange}
          blockStyleFn={this.blockStyleFn}
        />
+       <Save onSave={(evt)=>this.onSave(evt)}/>
+       <History versions={['yesterday','today']}/>
      </div>
     );
   }
