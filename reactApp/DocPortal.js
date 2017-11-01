@@ -24,7 +24,6 @@ class DocPortal extends React.Component {
   componentDidUpdate(){
     axios.get('http://localhost:3000' + this.state.pathname)
     .then((res) => {
-      console.log('updates');
       this.setState({docs: res.data});
     })
     .catch((err) => {console.log('DocPortal GET request failed', err);});
