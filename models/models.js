@@ -35,10 +35,7 @@ var documentSchema = new Schema({
     type: Array,
     default: [
       {
-        timeStamp: {
-          type: Date,
-          default: new Date()
-        },
+        timeStamp: new Date().toString(),
         state: newState
       }
     ]
