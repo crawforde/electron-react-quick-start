@@ -35,6 +35,11 @@ class MyEditor extends React.Component {
 */
 
   onChange(newState){
+
+    /* WE WANT TO HAVE DIRECT ACCESS TO THE FEATURES THAT ARE APPLIED TO EACH
+    CHARACTER IN THE CURRENT SELECTION. THE FOLLOWING CODE DOES THIS.
+    COMMENCE "THE JOURNEY OF A THOUSAND IMMUTABLES", STARRING draft.js */
+
     const currentContentState = this.state.editorState.getCurrentContent();
     const newContentState = newState.getCurrentContent();
     if (currentContentState === newContentState) {
@@ -57,9 +62,20 @@ class MyEditor extends React.Component {
           }
           return false;
         });
+
+        /* AFTER COMPLETING THIS TERRIFYING JOURNEY THROUGH THE EDITOR STATE,
+        WE FINALLY HAVE SOMETHING USEFUL STORED IN charStyles. THIS IS AN ARRAY
+        WITH EACH INDEX CORRESPONDING TO A CHARACTER IN THE SELECTION. THE
+        CONTENT AT ANY PARTICULAR INDEX IS EITHER AN ARRAY OF FEATURES APPLIED
+        TO THAT CHARACTER (FEATURES REPRESENTED BY THEIR NAMES, AS STRINGS),
+        OR false, IF NO FEATURES ARE APPLIED. */
+
+        // WE NOW USE charStyles TO PERFORM SELECTION EVENT BEHAVIOR.
         this.handleSelectionEvent(charStyles);
       }
     }
+
+    // UPDATE THE EDITOR STATE
     this.setState({editorState: newState});
   }
 
@@ -225,8 +241,10 @@ class MyEditor extends React.Component {
 
   render() {
     return (
-      <div id="editor" className="container">
-        <h2>Shareable Document ID: {this.state.docId}</h2>
+      <div id="editor">
+        <div id="doc-id">
+          <div>Shareable ID: </div><div><input value={this.state.docId} onFocus={(evt)=>evt.target.select()}/></div>
+        </div>
        <Toolbar
          COLOR={this.state.COLOR}
          SIZE={this.state.SIZE}

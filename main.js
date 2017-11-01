@@ -26,7 +26,7 @@ function createWindow () {
 
   // Open the DevTools.
   if (DEV_MODE) {
-      mainWindow.webContents.openDevTools();
+    mainWindow.webContents.openDevTools();
   }
 
   // Emitted when the window is closed.
