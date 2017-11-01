@@ -3,21 +3,19 @@ var path = require('path');
 var logger = require('morgan');
 var cookieParser = require('cookie-parser');
 var bodyParser = require('body-parser');
-
 var routes = require('./routes/index');
 var auth = require('./routes/auth');
 var passport = require('passport');
 var LocalStrategy = require('passport-local').Strategy;
 var models = require('../models/models.js');
 var User = models.User;
-
 var app = express();
+
 
 // view engine setup
 
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: false }));
-
 
 // Passport stuff here
 // YOUR CODE HERE
@@ -28,6 +26,7 @@ app.use(session({
 
 app.use(passport.initialize());
 app.use(passport.session());
+
 
 // Tell Passport how to set req.user
 passport.serializeUser(function(user, done) {

@@ -11,6 +11,8 @@ html,body,#root{
 }
 
 .btn-toolbar{
+  margin: 0;
+  flex: 1;
   background-color: white;
   border: 1px solid gray;
   display: flex;
@@ -18,9 +20,17 @@ html,body,#root{
   justify-content: center;
 }
 
-.toolbar{
-  padding-left: 10px;
-  padding-right: 10px;
+.select-toolbar{
+  flex: 3;
+}
+
+.btn-toolbar:hover{
+  background-color: rgb(245,245,245);
+}
+
+#toolbar{
+  display: flex;
+
 }
 
 .text-align-left{
@@ -33,4 +43,16 @@ html,body,#root{
 
 .text-align-right{
   text-align: right;
+}
+
+#save-bar{
+  display: flex;
+}
+
+.btn-save{
+  margin-right: 10px;
+}
+
+.footer-label{
+  margin-right: 10px;
 }
