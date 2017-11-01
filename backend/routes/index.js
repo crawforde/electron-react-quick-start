@@ -52,4 +52,8 @@ router.get('/docPortal/:username', function(req, res, next) {
   );
 });
 
+router.get('/editorView/:docId', function(req, res, next) {
+  res.send('got it');
+});
+
 module.exports = router;
