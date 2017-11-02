@@ -40,13 +40,6 @@ class MyEditor extends React.Component {
         history,
         editorState: EditorState.createWithContent(history[history.length - 1].state.getCurrentContent()),
         currentVersion: history.length - 1
-<<<<<<< HEAD
-=======
-      },()=>{
-        console.log(this.state.history[this.state.currentVersion].state);
-        console.log(this.state.editorState);
-        console.log(this.state.history[this.state.currentVersion].state===this.state.editorState);
->>>>>>> 37cbfeb09be7dc9e85308dc1642631a209a98532
       });
     })
     .catch((err)=>{
@@ -256,7 +249,9 @@ class MyEditor extends React.Component {
   }
 
   onSave(evt){
-    if(!this.saving){
+    const currentContentState = this.state.history[this.state.currentVersion].state.getCurrentContent();
+    const newContentState = this.state.editorState.getCurrentContent();
+    if(!this.saving && currentContentState !== newContentState){
       this.saving = true;
       var timeStamp = new Date().toString();
       var saveState = EditorState.createWithContent(this.state.editorState.getCurrentContent());

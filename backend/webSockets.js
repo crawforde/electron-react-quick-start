@@ -3,7 +3,6 @@ const app = express();
 const server = require('http').Server(app);
 const io = require('socket.io')(server);
 
-/*
 io.on('connection', socket => {
   socket.on('username', (username) => {
     if (!username || !username.trim()) {
@@ -45,4 +44,8 @@ io.on('connection', socket => {
     });
   });
 });
-*/
+
+const port = 4390;
+server.listen(port, () => {
+  console.log(`listening on port ${port}`);
+});
