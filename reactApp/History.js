@@ -10,7 +10,6 @@ class History extends React.Component {
   }
 
   componentWillReceiveProps(newProps){
-    // console.log(newProps);
     this.setState({
       currentVersion: newProps.currentVersion,
       history: newProps.versions.map((version,index)=>(version.timeStamp))
