@@ -35,13 +35,13 @@ class MyEditor extends React.Component {
   }
 
   componentDidMount(){
-
-    this.state.socket.on('docUpdate', (newRawContentJSON)=>{
-      var newEditorState = EditorState.createWithContent(convertFromRaw(JSON.parse(newRawContentJSON)));
+    this.state.socket.on('docUpdate', ({ rawContentJSON, changeTypeJSON })=>{
+      var newEditorState = EditorState.push(this.state.editorState, convertFromRaw(JSON.parse(rawContentJSON)), JSON.parse(changeTypeJSON));
       this.setState({
         editorState: newEditorState
       });
     });
+
     this.state.socket.on('joined', (username) => {
       console.log(`${username} is viewing the document.`);
     });
@@ -109,7 +109,9 @@ class MyEditor extends React.Component {
     }
     // IF THIS IS A CONTENT CHANGE...
     else {
-      this.state.socket.emit('docUpdate', JSON.stringify(convertToRaw(newState.getCurrentContent())), this.state.docId);
+      var rawContentJSON = JSON.stringify(convertToRaw(newState.getCurrentContent()));
+      var changeTypeJSON = JSON.stringify(newContentState.getLastChangeType());
+      this.state.socket.emit('docUpdate', { rawContentJSON , changeTypeJSON });
     }
 
     // UPDATE THE EDITOR STATE
