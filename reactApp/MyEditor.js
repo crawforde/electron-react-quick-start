@@ -52,18 +52,13 @@ class MyEditor extends React.Component {
     });
 
     this.state.socket.on('doneSaving', (version)=>{
-      if (!this.state.readOnly) {
-        version.state = EditorState.createWithContent(convertFromRaw(JSON.parse(version.state)));
-        var newHistory = this.state.history.slice();
-        newHistory.push(version);
-        this.setState({
-          history: newHistory,
-          currentVersion: newHistory.length - 1
-        },()=>this.saving = false);
-      }
-      else {
-        this.saving = false;
-      }
+      version.state = EditorState.createWithContent(convertFromRaw(JSON.parse(version.state)));
+      var newHistory = this.state.history.slice();
+      newHistory.push(version);
+      this.setState({
+        history: newHistory,
+        currentVersion: this.state.readOnly ? this.state.currentVersion : newHistory.length - 1
+      },()=>this.saving = false);
     });
 
     axios.get(`${SERVER_URL}/editorView/${this.state.username}/${this.state.docId}`)
