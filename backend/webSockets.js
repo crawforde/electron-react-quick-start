@@ -18,15 +18,14 @@ io.on('connection', socket => {
   });
 
   socket.on('document', (requestedRoom) => {
-    console.log(requestedRoom);
+    socket.document = requestedRoom.docId;
+    socket.username = requestedRoom.username;
     if (!requestedRoom.docId) {
       return socket.emit('errorMessage', 'No room!');
     }
-    if (socket.document) {
+    if (socket.document === requestedRoom.docId) {
       socket.leave(socket.document);
     }
-    socket.document = requestedRoom.docId;
-    socket.username = requestedRoom.username;
     socket.join(requestedRoom.docId, () => {
       socket.to(requestedRoom.docId).emit('joined', socket.username);
     });

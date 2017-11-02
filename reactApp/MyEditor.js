@@ -25,7 +25,7 @@ class MyEditor extends React.Component {
       currentVersion: 0,
       COLOR: 'mixed',
       SIZE: 'mixed',
-      socket: openSocket(SOCKET_SERVER_URL)
+      socket: openSocket('http://localhost:4390')
     };
     this.onChange = this.onChange.bind(this);
     this.handleKeyCommand = this.handleKeyCommand.bind(this);
@@ -319,7 +319,8 @@ class MyEditor extends React.Component {
   }
 
   leaveDoc(docId){
-    this.state.socket.emit('document', '');
+    this.state.socket.emit('document', this.state.docId);
+    this.props.history.push(`/docPortal/${this.state.username}`);
   }
 
   render() {
@@ -329,7 +330,7 @@ class MyEditor extends React.Component {
           <div>Shareable ID: </div><div><input readOnly={true} value={this.state.docId} onFocus={(evt)=>evt.target.select()}/></div>
         </div>
         <div>
-          <button onClick={() => this.props.history.push(`/docPortal/${this.state.username}`)}>Back to Documents portal</button>
+          <button onClick={() => this.leaveDoc()}>Back to Documents portal</button>
           <button onClick={() => this.logout()}>Log Out</button>
         </div>
        <Toolbar
