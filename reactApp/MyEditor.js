@@ -25,7 +25,7 @@ class MyEditor extends React.Component {
       currentVersion: 0,
       COLOR: 'mixed',
       SIZE: 'mixed',
-      socket: openSocket('http://localhost:4390')
+      socket: openSocket(SOCKET_SERVER_URL)
     };
     this.onChange = this.onChange.bind(this);
     this.handleKeyCommand = this.handleKeyCommand.bind(this);
