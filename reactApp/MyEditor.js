@@ -8,7 +8,7 @@ import axios from 'axios';
 import openSocket from 'socket.io-client';
 
 const SERVER_URL = "http://localhost:3000";
-const SOCKET_SERVER_URL = "http://localhost:4390";
+const SOCKET_SERVER_URL = "https://aae1cc2e.ngrok.io";
 
 class MyEditor extends React.Component {
 
@@ -36,10 +36,11 @@ class MyEditor extends React.Component {
 
   componentDidMount(){
     this.state.socket.on('docUpdate', (newRawContentJSON)=>{
-      var newEditorState = EditorState.createWithContent(convertFromRaw(JSON.parse(newRawContentJSON)));
-      this.setState({
-        editorState: newEditorState
-      });
+      console.log(newRawContentJSON);
+      // var newEditorState = EditorState.createWithContent(convertFromRaw(JSON.parse(newRawContentJSON)));
+      // this.setState({
+      //   editorState: newEditorState
+      // });
     });
 
     axios.get(`${SERVER_URL}/editorView/${this.state.username}/${this.state.docId}`)
