@@ -33,8 +33,8 @@ io.on('connection', socket => {
     });
   });
 
-  socket.on('docUpdate', editData =>{
-    socket.to(socket.document).emit('docUpdate','Document Updated');
+  socket.on('docUpdate', (editData, docId) =>{
+    socket.to(docId).emit('docUpdate','Document Updated');
     // socket.to(socket.document).broadcast('docUpdate', editData);
   });
 

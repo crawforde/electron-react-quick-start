@@ -104,7 +104,8 @@ class MyEditor extends React.Component {
     }
     // IF THIS IS A CONTENT CHANGE...
     else {
-      this.state.socket.emit('docUpdate', JSON.stringify(convertToRaw(newState.getCurrentContent())));
+      console.log('Emitting');
+      this.state.socket.emit('docUpdate', JSON.stringify(convertToRaw(newState.getCurrentContent())), this.state.docId);
     }
 
     // UPDATE THE EDITOR STATE
