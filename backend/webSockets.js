@@ -5,11 +5,7 @@ const io = require('socket.io')(server);
 
 
 io.on('connection', socket => {
-  socket.on('test', (test) => {
-    if (test) {
-      return socket.emit('testsuccess', 'Yay!');
-    }
-  });
+  
   socket.on('document', (requestedRoom) => {
     socket.document = requestedRoom.docId;
     socket.username = requestedRoom.username;
