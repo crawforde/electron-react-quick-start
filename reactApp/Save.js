@@ -4,8 +4,15 @@ class Save extends React.Component {
   constructor(props) {
     super(props);
     this.state={
-      lastSave: false
+      lastSave: false,
+      readOnly: this.props.readOnly
     };
+  }
+
+  componentWillReceiveProps(newProps){
+    this.setState({
+      readOnly: newProps.readOnly
+    });
   }
 
   handleSave(evt){
@@ -18,7 +25,7 @@ class Save extends React.Component {
   render() {
     return (
       <div id="save-bar">
-         <button className="btn-save" onClick={(evt)=>this.handleSave(evt)}>{(this.props.readOnly) ? 'Restore' : 'Save'}</button>
+         <button className="btn-save" onClick={(evt)=>this.handleSave(evt)}>{(this.state.readOnly) ? 'Restore' : 'Save'}</button>
          <p>Last save: {this.state.lastSave ? this.state.lastSave.toString() : 'never'}</p>
       </div>
     );
