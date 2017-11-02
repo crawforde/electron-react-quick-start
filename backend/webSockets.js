@@ -36,7 +36,10 @@ io.on('connection', socket => {
   socket.on('docUpdate', (editData, docId) =>{
     console.log(docId);
     socket.to(docId).emit('docUpdate','Document Updated');
+<<<<<<< HEAD
+=======
     // socket.to(socket.document).broadcast('docUpdate', editData);
+>>>>>>> 1147e77322f3b2ebf814ee9fd46151010c6a7864
   });
 
   socket.on('message', (message) => {
