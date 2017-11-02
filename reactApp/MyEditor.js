@@ -54,11 +54,12 @@ class MyEditor extends React.Component {
     });
 
     this.state.socket.on('doneSaving', (version)=>{
-      console.log('Someone is saving.');
-      console.log("Are we readOnly?", this.state.readOnly);
       version.state = EditorState.createWithContent(convertFromRaw(JSON.parse(version.state)));
+      console.log(version);
       var newHistory = this.state.history.slice();
+      console.log(newHistory);
       newHistory.push(version);
+      console.log(newHistory);
       this.setState({
         history: newHistory,
         currentVersion: this.state.readOnly ? this.state.currentVersion : newHistory.length - 1
