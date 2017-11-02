@@ -37,10 +37,12 @@ class MyEditor extends React.Component {
 
   componentDidMount(){
     this.state.socket.on('docUpdate', ({ rawContentJSON, changeTypeJSON }) => {
-      var newEditorState = EditorState.push(this.state.editorState, convertFromRaw(JSON.parse(rawContentJSON)), JSON.parse(changeTypeJSON));
-      this.setState({
-        editorState: newEditorState
-      });
+      if(!this.state.readOnly){
+        var newEditorState = EditorState.push(this.state.editorState, convertFromRaw(JSON.parse(rawContentJSON)), JSON.parse(changeTypeJSON));
+        this.setState({
+          editorState: newEditorState
+        });
+      }
     });
 
     this.state.socket.on('joined', (username) => {
