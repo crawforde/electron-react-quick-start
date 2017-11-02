@@ -2,7 +2,6 @@ import 'babel-polyfill';
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { Redirect } from 'react-router';
-import { DocPortal } from './DocPortal';
 import axios from 'axios';
 /* This can check if your electron app can communicate with your backend */
 // fetch('http://localhost:3000')
