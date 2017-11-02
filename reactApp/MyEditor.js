@@ -54,9 +54,13 @@ class MyEditor extends React.Component {
     });
 
     this.state.socket.on('doneSaving', (version)=>{
+      console.log('Someone is saving');
       version.state = EditorState.createWithContent(convertFromRaw(JSON.parse(version.state)));
+      console.log(version);
       var newHistory = this.state.history.slice();
+      console.log(newHistory);
       newHistory.push(version);
+      console.log(newHistory);
       this.setState({
         history: newHistory,
         currentVersion: this.state.readOnly ? this.state.currentVersion : newHistory.length - 1
@@ -331,7 +335,7 @@ class MyEditor extends React.Component {
   }
 
   changeVersion(newVersion){
-    var readOnly = newVersion !== this.state.history.length - 1;
+    var readOnly = parseInt(newVersion) !== this.state.history.length - 1;
     this.setState({
       editorState: EditorState.createWithContent(this.state.history[newVersion].state.getCurrentContent()),
       currentVersion: newVersion,
