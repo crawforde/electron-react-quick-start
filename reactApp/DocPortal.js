@@ -43,9 +43,6 @@ class DocPortal extends React.Component {
   joinDoc(docId){
     this.state.socket.emit('document', docId);
   }
-  leaveDoc(docId){
-    this.state.socket.emit('document', '');
-  }
   render() {
     let key = 0;
     return (
