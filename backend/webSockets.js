@@ -17,19 +17,17 @@ io.on('connection', socket => {
     socket.username = String(username);
   });
 
-  socket.on('document', requestedRoom => {
-    if (!requestedRoom) {
+  socket.on('document', (requestedRoom) => {
+    if (!requestedRoom.docId) {
       return socket.emit('errorMessage', 'No room!');
     }
     if (socket.document) {
       socket.leave(socket.document);
     }
-    socket.document = requestedRoom;
-    socket.join(requestedRoom, () => {
-      socket.to(requestedRoom).emit('joined', {
-        username: socket.username,
-        content: `${socket.username} has joined`
-      });
+    socket.document = requestedRoom.docId;
+    socket.username = requestedRoom.username;
+    socket.join(requestedRoom.docId, () => {
+      io.in(requestedRoom.docId).emit('joined', 'success');
     });
   });
 

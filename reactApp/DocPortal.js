@@ -3,20 +3,19 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import axios from 'axios';
 import { AddDocument } from './Modal';
-import openSocket from 'socket.io-client';
+//import openSocket from 'socket.io-client';
 //https://aae1cc2e.ngrok.io/
 //http://localhost:4390
 class DocPortal extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
-      socket: openSocket('https://aae1cc2e.ngrok.io/'),
+  //    socket: openSocket('https://aae1cc2e.ngrok.io/'),
       username: this.props.location.pathname.slice(11),
       pathname: this.props.location.pathname,
       docs: [],
       newDocPathname: '',
     };
-    this.joinDoc = this.joinDoc.bind(this);
   }
   componentWillMount(){
     axios.get('http://localhost:3000' + this.state.pathname)
@@ -24,11 +23,6 @@ class DocPortal extends React.Component {
       this.setState({docs: res.data});
     })
     .catch((err) => {console.log('DocPortal GET request failed', err);});
-    this.state.socket.emit('test', true);
-    this.state.socket.on('testsuccess', (test) => {
-      console.log(test);
-    });
-    this.state.socket.emit('username', this.state.username);
   }
   newDocList(doc){
     this.setState({
@@ -42,9 +36,6 @@ class DocPortal extends React.Component {
       console.log('Logout failed', err);
     });
   }
-  joinDoc(docId){
-    this.state.socket.emit('document', docId);
-  }
   render() {
     let key = 0;
     return (
@@ -54,7 +45,7 @@ class DocPortal extends React.Component {
         <AddDocument newDoc={true} username={this.state.username} newDocList={(doc) => this.newDocList(doc)} />
         <div style={{border: '2px solid lightpink'}}>
           {
-            this.state.docs.map((doc) => {key++; return <p key={key} onClick={() => this.joinDoc(doc._id)}><Link to={`/editorView/${this.state.username}/${doc._id}`}>{doc.title}</Link></p>;})
+            this.state.docs.map((doc) => {key++; return <p key={key}><Link to={`/editorView/${this.state.username}/${doc._id}`}>{doc.title}</Link></p>;})
           }
         </div>
         <AddDocument newDoc={false} username={this.state.username} newDocList={(doc) => this.newDocList(doc)}/>
