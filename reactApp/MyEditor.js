@@ -25,7 +25,8 @@ class MyEditor extends React.Component {
       currentVersion: 0,
       COLOR: 'mixed',
       SIZE: 'mixed',
-      socket: openSocket(SOCKET_SERVER_URL)
+      socket: openSocket(SOCKET_SERVER_URL),
+      readOnly: false
     };
     this.onChange = this.onChange.bind(this);
     this.handleKeyCommand = this.handleKeyCommand.bind(this);
@@ -313,7 +314,7 @@ class MyEditor extends React.Component {
           history: newHistory,
           currentVersion: newHistory.length - 1
         },() => {
-          this.socket.emit('doneSaving', {
+          this.state.socket.emit('doneSaving', {
             state: saveStateJSON,
             timeStamp
           });
@@ -370,7 +371,7 @@ class MyEditor extends React.Component {
          onChange={this.onChange}
          blockStyleFn={this.blockStyleFn}
        />
-       <Save onSave={()=>this.onSave()}/>
+       <Save onSave={()=>this.onSave()} readOnly={this.state.readOnly} />
        <History versions={this.state.history} currentVersion={this.state.currentVersion} changeVersion={(newVersion)=>this.changeVersion(newVersion)}/>
      </div>
     );
