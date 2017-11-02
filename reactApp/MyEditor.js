@@ -41,6 +41,9 @@ class MyEditor extends React.Component {
       // this.setState({
       //   editorState: newEditorState
       // });
+      this.state.socket.on('joined', (joined) => {
+        console.log(joined);
+      });
     });
 
     axios.get(`${SERVER_URL}/editorView/${this.state.username}/${this.state.docId}`)
