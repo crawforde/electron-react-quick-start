@@ -15,7 +15,7 @@ class DocPortal extends React.Component {
       docs: [],
       newDocPathname: '',
     };
-   this.joinDoc = this.joinDoc.bind(this);
+    this.joinDoc = this.joinDoc.bind(this);
   }
   componentWillMount(){
     axios.get('http://localhost:3000' + this.state.pathname)
@@ -27,6 +27,7 @@ class DocPortal extends React.Component {
     this.state.socket.on('testsuccess', (test) => {
       console.log(test);
     });
+    this.state.socket.emit('username', this.state.username);
   }
   newDocList(doc){
     this.setState({

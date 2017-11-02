@@ -34,7 +34,7 @@ class AddDocument extends React.Component {
       this.refs.title.value = '';
       this.props.newDocList(resp.data);
     })
-    .catch((err) => {console.log('new Document Post request failed', err);});
+    .catch((err) => {alert('New Document Post request failed. Make sure to have both title and password.');});
   }
   newCollab(e){
     e.preventDefault();
