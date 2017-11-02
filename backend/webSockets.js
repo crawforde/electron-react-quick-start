@@ -33,8 +33,8 @@ io.on('connection', socket => {
     });
   });
 
-  socket.on('edit', editData =>{
-    socket.to(editData.roomName).broadcast('docUpdate', editData);
+  socket.on('docUpdate', editData => {
+    socket.to(socket.document).emit('docUpdate', editData);
   });
 
   socket.on('message', (message) => {

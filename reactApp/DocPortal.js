@@ -5,11 +5,12 @@ import axios from 'axios';
 import { AddDocument } from './Modal';
 import openSocket from 'socket.io-client';
 
+//http://localhost:4390
 class DocPortal extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
-      socket: openSocket('http://localhost:4390'),
+      socket: openSocket('https://aae1cc2e.ngrok.io/'),
       username: this.props.location.pathname.slice(11),
       pathname: this.props.location.pathname,
       docs: [],
