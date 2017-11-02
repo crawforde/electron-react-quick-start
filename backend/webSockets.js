@@ -32,8 +32,8 @@ io.on('connection', socket => {
     });
   });
 
-  socket.on('docUpdate', (editData) =>{
-    socket.to(socket.document).emit('docUpdate', editData);
+  socket.on('docUpdate', (changes) =>{
+    socket.to(socket.document).emit('docUpdate', changes);
   });
 
   socket.on('message', (message) => {
