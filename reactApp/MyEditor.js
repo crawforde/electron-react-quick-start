@@ -279,6 +279,7 @@ class MyEditor extends React.Component {
     const newContentState = this.state.editorState.getCurrentContent();
     if(!this.saving && currentContentState !== newContentState){
       this.saving = true;
+      this.state.socket.emit('saving');
       var timeStamp = new Date().toString();
       var saveState = EditorState.createWithContent(this.state.editorState.getCurrentContent());
       var saveStateJSON = JSON.stringify(convertToRaw(saveState.getCurrentContent()));
@@ -297,7 +298,13 @@ class MyEditor extends React.Component {
         this.setState({
           history: newHistory,
           currentVersion: newHistory.length - 1
-        },()=>this.saving = false);
+        },() => {
+          this.socket.emit('doneSaving', {
+            state: saveStateJSON,
+            timeStamp
+          });
+          this.saving = false;
+        });
       })
       .catch((err)=>{
         console.log('Error:',err);

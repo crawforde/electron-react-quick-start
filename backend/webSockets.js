@@ -35,14 +35,12 @@ io.on('connection', socket => {
     socket.to(socket.document).emit('docUpdate', changes);
   });
 
-  socket.on('message', (message) => {
-    if (!socket.room) {
-      return socket.emit('errorMessage', 'No rooms joined!');
-    }
-    socket.to(socket.room).emit('message', {
-      username: message.username,
-      content: message.content
-    });
+  socket.on('saving', () => {
+    socket.to(socket.document).emit('saving');
+  });
+
+  socket.on('doneSaving', version => {
+    socket.to(socket.document).emit('doneSaving', version);
   });
 });
 
