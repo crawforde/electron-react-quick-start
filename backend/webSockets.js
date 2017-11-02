@@ -11,17 +11,14 @@ io.on('connection', socket => {
     }
   });
 
-  socket.on('room', requestedRoom => {
-    if (!socket.username) {
-      return socket.emit('errorMessage', 'Username not set!');
-    }
+  socket.on('document', requestedRoom => {
     if (!requestedRoom) {
       return socket.emit('errorMessage', 'No room!');
     }
-    if (socket.room) {
-      socket.leave(socket.room);
+    if (socket.document) {
+      socket.leave(socket.document);
     }
-    socket.room = requestedRoom;
+    socket.document = requestedRoom;
     socket.join(requestedRoom, () => {
       socket.to(requestedRoom).emit('message', {
         username: 'System',

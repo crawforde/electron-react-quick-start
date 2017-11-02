@@ -15,6 +15,7 @@ class DocPortal extends React.Component {
       docs: [],
       newDocPathname: '',
     };
+   this.joinDoc = this.joinDoc.bind(this);
   }
   componentWillMount(){
     axios.get('http://localhost:3000' + this.state.pathname)
@@ -39,6 +40,12 @@ class DocPortal extends React.Component {
       console.log('Logout failed', err);
     });
   }
+  joinDoc(docId){
+    this.state.socket.emit('document', docId);
+  }
+  leaveDoc(docId){
+    this.state.socket.emit('document', '');
+  }
   render() {
     let key = 0;
     return (
@@ -48,7 +55,7 @@ class DocPortal extends React.Component {
         <AddDocument newDoc={true} username={this.state.username} newDocList={(doc) => this.newDocList(doc)} />
         <div style={{border: '2px solid lightpink'}}>
           {
-            this.state.docs.map((doc) => {key++; return <p key={key}><Link to={`/editorView/${this.state.username}/${doc._id}`}>{doc.title}</Link></p>;})
+            this.state.docs.map((doc) => {key++; return <p key={key} onClick={() => this.joinDoc(doc._id)}><Link to={`/editorView/${this.state.username}/${doc._id}`}>{doc.title}</Link></p>;})
           }
         </div>
         <AddDocument newDoc={false} username={this.state.username} newDocList={(doc) => this.newDocList(doc)}/>
