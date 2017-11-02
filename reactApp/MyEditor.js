@@ -52,13 +52,18 @@ class MyEditor extends React.Component {
     });
 
     this.state.socket.on('doneSaving', (version)=>{
-      version.state = EditorState.createWithContent(convertFromRaw(JSON.parse(version.state)));
-      var newHistory = this.state.history.slice();
-      newHistory.push(version);
-      this.setState({
-        history: newHistory,
-        currentVersion: newHistory.length - 1
-      },()=>this.saving = false);
+      if (!this.state.readOnly) {
+        version.state = EditorState.createWithContent(convertFromRaw(JSON.parse(version.state)));
+        var newHistory = this.state.history.slice();
+        newHistory.push(version);
+        this.setState({
+          history: newHistory,
+          currentVersion: newHistory.length - 1
+        },()=>this.saving = false);
+      }
+      else {
+        this.saving = false;
+      }
     });
 
     axios.get(`${SERVER_URL}/editorView/${this.state.username}/${this.state.docId}`)
@@ -82,55 +87,56 @@ class MyEditor extends React.Component {
 
   onChange(newState){
 
-    // const lastChangeType = newState.getLastChangeType();
-    /* WE WANT TO HAVE DIRECT ACCESS TO THE FEATURES THAT ARE APPLIED TO EACH
-    CHARACTER IN THE CURRENT SELECTION. THE FOLLOWING CODE DOES THIS.
-    COMMENCE "THE JOURNEY OF A THOUSAND IMMUTABLES", STARRING draft.js */
+    if(!this.state.readOnly){  // const lastChangeType = newState.getLastChangeType();
+      /* WE WANT TO HAVE DIRECT ACCESS TO THE FEATURES THAT ARE APPLIED TO EACH
+      CHARACTER IN THE CURRENT SELECTION. THE FOLLOWING CODE DOES THIS.
+      COMMENCE "THE JOURNEY OF A THOUSAND IMMUTABLES", STARRING draft.js */
 
-    const currentContentState = this.state.editorState.getCurrentContent();
-    const newContentState = newState.getCurrentContent();
-    // IF THIS IS NOT A CONTENT CHANGE...
-    if (currentContentState === newContentState) {
-      var selectionState = newState.getSelection();
-      var anchorKey = selectionState.getAnchorKey();
-      var contentBlock = newContentState.getBlockForKey(anchorKey);
-      var start = selectionState.getStartOffset();
-      var end = selectionState.getEndOffset();
-      var chars = contentBlock.getCharacterList()._tail;
-      if(chars){
-        var charStyles = chars.array.map((metadata)=>{
-          return metadata.getStyle() ? metadata.getStyle()._map._list : metadata;
-        });
-        charStyles = charStyles.slice(start,end);
-        charStyles = charStyles.map((list)=>{
-          if(list._tail){
-            return list._tail.array.map((feature)=>{
-              return feature ? feature[0] : feature;
-            });
-          }
-          return false;
-        });
+      const currentContentState = this.state.editorState.getCurrentContent();
+      const newContentState = newState.getCurrentContent();
+      // IF THIS IS NOT A CONTENT CHANGE...
+      if (currentContentState === newContentState) {
+        var selectionState = newState.getSelection();
+        var anchorKey = selectionState.getAnchorKey();
+        var contentBlock = newContentState.getBlockForKey(anchorKey);
+        var start = selectionState.getStartOffset();
+        var end = selectionState.getEndOffset();
+        var chars = contentBlock.getCharacterList()._tail;
+        if(chars){
+          var charStyles = chars.array.map((metadata)=>{
+            return metadata.getStyle() ? metadata.getStyle()._map._list : metadata;
+          });
+          charStyles = charStyles.slice(start,end);
+          charStyles = charStyles.map((list)=>{
+            if(list._tail){
+              return list._tail.array.map((feature)=>{
+                return feature ? feature[0] : feature;
+              });
+            }
+            return false;
+          });
 
-        /* AFTER COMPLETING THIS TERRIFYING JOURNEY THROUGH THE EDITOR STATE,
-        WE FINALLY HAVE SOMETHING USEFUL STORED IN charStyles. THIS IS AN ARRAY
-        WITH EACH INDEX CORRESPONDING TO A CHARACTER IN THE SELECTION. THE
-        CONTENT AT ANY PARTICULAR INDEX IS EITHER AN ARRAY OF FEATURES APPLIED
-        TO THAT CHARACTER (FEATURES REPRESENTED BY THEIR NAMES, AS STRINGS),
-        OR false, IF NO FEATURES ARE APPLIED. */
+          /* AFTER COMPLETING THIS TERRIFYING JOURNEY THROUGH THE EDITOR STATE,
+          WE FINALLY HAVE SOMETHING USEFUL STORED IN charStyles. THIS IS AN ARRAY
+          WITH EACH INDEX CORRESPONDING TO A CHARACTER IN THE SELECTION. THE
+          CONTENT AT ANY PARTICULAR INDEX IS EITHER AN ARRAY OF FEATURES APPLIED
+          TO THAT CHARACTER (FEATURES REPRESENTED BY THEIR NAMES, AS STRINGS),
+          OR false, IF NO FEATURES ARE APPLIED. */
 
-        // WE NOW USE charStyles TO PERFORM SELECTION EVENT BEHAVIOR.
-        this.handleSelectionEvent(charStyles);
+          // WE NOW USE charStyles TO PERFORM SELECTION EVENT BEHAVIOR.
+          this.handleSelectionEvent(charStyles);
+        }
       }
-    }
-    // IF THIS IS A CONTENT CHANGE...
-    else {
-      var rawContentJSON = JSON.stringify(convertToRaw(newState.getCurrentContent()));
-      var changeTypeJSON = JSON.stringify(newState.getLastChangeType());
-      this.state.socket.emit('docUpdate', { rawContentJSON , changeTypeJSON });
-    }
+      // IF THIS IS A CONTENT CHANGE...
+      else {
+        var rawContentJSON = JSON.stringify(convertToRaw(newState.getCurrentContent()));
+        var changeTypeJSON = JSON.stringify(newState.getLastChangeType());
+        this.state.socket.emit('docUpdate', { rawContentJSON , changeTypeJSON });
+      }
 
-    // UPDATE THE EDITOR STATE
-    this.setState({editorState: newState});
+      // UPDATE THE EDITOR STATE
+      this.setState({editorState: newState});
+    }
   }
 
   handleSelectionEvent(charStyles){
@@ -328,9 +334,11 @@ class MyEditor extends React.Component {
   }
 
   changeVersion(newVersion){
+    var readOnly = newVersion !== this.state.history.length - 1;
     this.setState({
       editorState: EditorState.createWithContent(this.state.history[newVersion].state.getCurrentContent()),
-      currentVersion: newVersion
+      currentVersion: newVersion,
+      readOnly
     });
   }
 
