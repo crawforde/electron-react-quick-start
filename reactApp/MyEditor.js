@@ -37,10 +37,12 @@ class MyEditor extends React.Component {
 
   componentDidMount(){
     this.state.socket.on('docUpdate', ({ rawContentJSON, changeTypeJSON }) => {
-      var newEditorState = EditorState.push(this.state.editorState, convertFromRaw(JSON.parse(rawContentJSON)), JSON.parse(changeTypeJSON));
-      this.setState({
-        editorState: newEditorState
-      });
+      if(!this.state.readOnly){
+        var newEditorState = EditorState.push(this.state.editorState, convertFromRaw(JSON.parse(rawContentJSON)), JSON.parse(changeTypeJSON));
+        this.setState({
+          editorState: newEditorState
+        });
+      }
     });
 
     this.state.socket.on('joined', (username) => {
@@ -52,6 +54,8 @@ class MyEditor extends React.Component {
     });
 
     this.state.socket.on('doneSaving', (version)=>{
+      console.log('Someone is saving.');
+      console.log("Are we readOnly?", this.state.readOnly);
       version.state = EditorState.createWithContent(convertFromRaw(JSON.parse(version.state)));
       var newHistory = this.state.history.slice();
       newHistory.push(version);
@@ -329,7 +333,7 @@ class MyEditor extends React.Component {
   }
 
   changeVersion(newVersion){
-    var readOnly = newVersion !== this.state.history.length - 1;
+    var readOnly = parseInt(newVersion) !== this.state.history.length - 1;
     this.setState({
       editorState: EditorState.createWithContent(this.state.history[newVersion].state.getCurrentContent()),
       currentVersion: newVersion,
