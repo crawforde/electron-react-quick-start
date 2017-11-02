@@ -34,6 +34,7 @@ io.on('connection', socket => {
   });
 
   socket.on('docUpdate', (editData, docId) =>{
+    console.log(docId);
     socket.to(docId).emit('docUpdate','Document Updated');
     // socket.to(socket.document).broadcast('docUpdate', editData);
   });
