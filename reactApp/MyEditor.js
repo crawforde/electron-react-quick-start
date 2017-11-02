@@ -35,15 +35,16 @@ class MyEditor extends React.Component {
   }
 
   componentDidMount(){
+
     this.state.socket.on('docUpdate', (newRawContentJSON)=>{
       console.log(newRawContentJSON);
       // var newEditorState = EditorState.createWithContent(convertFromRaw(JSON.parse(newRawContentJSON)));
       // this.setState({
       //   editorState: newEditorState
       // });
-      this.state.socket.on('joined', (joined) => {
-        console.log(joined);
-      });
+    });
+    this.state.socket.on('joined', (username) => {
+      console.log(`${username} is viewing the document.`);
     });
 
     axios.get(`${SERVER_URL}/editorView/${this.state.username}/${this.state.docId}`)
@@ -56,6 +57,8 @@ class MyEditor extends React.Component {
         history,
         editorState: EditorState.createWithContent(history[history.length - 1].state.getCurrentContent()),
         currentVersion: history.length - 1
+      }, ()=>{
+        this.state.socket.emit('document',{docId: this.state.docId, username: this.state.username});
       });
     })
     .catch((err)=>{
@@ -107,7 +110,6 @@ class MyEditor extends React.Component {
     }
     // IF THIS IS A CONTENT CHANGE...
     else {
-      console.log('Emitting');
       this.state.socket.emit('docUpdate', JSON.stringify(convertToRaw(newState.getCurrentContent())), this.state.docId);
     }
 
