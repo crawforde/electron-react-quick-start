@@ -32,17 +32,27 @@ class DocPortal extends React.Component {
       docs: [...this.state.docs, doc]
     });
   }
+  logout(){
+    axios.get('http://localhost:3000/logout')
+    .then(() => this.props.history.push('/login'))
+    .catch((err) => {
+      console.log('Logout failed', err);
+    });
+  }
   render() {
     let key = 0;
     return (
       <div>
+        <button onClick={() => this.logout()}>Log Out</button>
+        <div>
         <AddDocument newDoc={true} username={this.state.username} newDocList={(doc) => this.newDocList(doc)} />
         <div style={{border: '2px solid lightpink'}}>
           {
-            this.state.docs.map((doc) => {key++; return <p key={key}><Link to={`/editorView/${doc._id}`}>{doc.title}</Link></p>;})
+            this.state.docs.map((doc) => {key++; return <p key={key}><Link to={`/editorView/${this.state.username}/${doc._id}`}>{doc.title}</Link></p>;})
           }
         </div>
         <AddDocument newDoc={false} username={this.state.username} newDocList={(doc) => this.newDocList(doc)}/>
+        </div>
       </div>
     );
   }

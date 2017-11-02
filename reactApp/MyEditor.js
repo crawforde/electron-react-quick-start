@@ -17,6 +17,7 @@ class MyEditor extends React.Component {
     this.saving = false;
     this.state = {
       docId: pathname.pop(),
+      username: pathname.pop(),
       editorState: EditorState.createEmpty(),
       history: [{state : null , timeStamp : null}],
       currentVersion: 0,
@@ -30,7 +31,7 @@ class MyEditor extends React.Component {
   }
 
   componentDidMount(){
-    axios.get(`${SERVER_URL}/editorView/${this.state.docId}`)
+    axios.get(`${SERVER_URL}/editorView/${this.state.username}/${this.state.docId}`)
     .then((resp)=>{
       var history = resp.data.version.map((version)=>({
         state: EditorState.createWithContent(convertFromRaw(JSON.parse(version.state))),
@@ -286,11 +287,23 @@ class MyEditor extends React.Component {
     });
   }
 
+  logout(){
+    axios.get('http://localhost:3000/logout')
+    .then(() => this.props.history.push('/login'))
+    .catch((err) => {
+      console.log('Logout failed', err);
+    });
+  }
+
   render() {
     return (
       <div id="editor">
         <div id="doc-id">
           <div>Shareable ID: </div><div><input readOnly={true} value={this.state.docId} onFocus={(evt)=>evt.target.select()}/></div>
+        </div>
+        <div>
+          <button onClick={() => this.props.history.push(`/docPortal/${this.state.username}`)}>Back to Documents portal</button>
+          <button onClick={() => this.logout()}>Log Out</button>
         </div>
        <Toolbar
          COLOR={this.state.COLOR}

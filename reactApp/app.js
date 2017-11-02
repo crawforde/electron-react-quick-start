@@ -20,7 +20,7 @@ class Home extends React.Component {
           <Route path="/login" component={Login}/>
           <Route path="/register" component={Register}/>
           <Route path="/docPortal/:username" component={DocPortal}/>
-          <Route path="/editorView/:docId" component={MyEditor}/>
+          <Route path="/editorView/:username/:docId" component={MyEditor}/>
       </div>
       </HashRouter>
     );
