@@ -10,6 +10,12 @@ io.on('connection', socket => {
       return socket.emit('testsuccess', 'Yay!');
     }
   });
+  socket.on('username', username => {
+    if (!username) {
+      return socket.emit('errorMessage', 'No username!');
+    }
+    socket.username = String(username);
+  });
 
   socket.on('document', requestedRoom => {
     if (!requestedRoom) {
@@ -20,15 +26,15 @@ io.on('connection', socket => {
     }
     socket.document = requestedRoom;
     socket.join(requestedRoom, () => {
-      socket.to(requestedRoom).emit('message', {
-        username: 'System',
+      socket.to(requestedRoom).emit('joined', {
+        username: socket.username,
         content: `${socket.username} has joined`
       });
     });
   });
 
   socket.on('edit', editData =>{
-    socket.to(editData.roomName).emit('edit',editData);
+    socket.to(editData.roomName).broadcast('docUpdate', editData);
   });
 
   socket.on('message', (message) => {
