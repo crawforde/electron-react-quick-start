@@ -11,7 +11,6 @@ var models = require('../models/models.js');
 var User = models.User;
 var app = express();
 
-
 // view engine setup
 
 app.use(bodyParser.json());
