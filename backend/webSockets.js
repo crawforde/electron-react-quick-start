@@ -5,18 +5,7 @@ const io = require('socket.io')(server);
 
 
 io.on('connection', socket => {
-  socket.on('test', (test) => {
-    if (test) {
-      return socket.emit('testsuccess', 'Yay!');
-    }
-  });
-  socket.on('username', username => {
-    if (!username) {
-      return socket.emit('errorMessage', 'No username!');
-    }
-    socket.username = String(username);
-  });
-
+  
   socket.on('document', (requestedRoom) => {
     socket.document = requestedRoom.docId;
     socket.username = requestedRoom.username;
@@ -35,14 +24,12 @@ io.on('connection', socket => {
     socket.to(socket.document).emit('docUpdate', changes);
   });
 
-  socket.on('message', (message) => {
-    if (!socket.room) {
-      return socket.emit('errorMessage', 'No rooms joined!');
-    }
-    socket.to(socket.room).emit('message', {
-      username: message.username,
-      content: message.content
-    });
+  socket.on('saving', () => {
+    socket.to(socket.document).emit('saving');
+  });
+
+  socket.on('doneSaving', version => {
+    socket.to(socket.document).emit('doneSaving', version);
   });
 });
 

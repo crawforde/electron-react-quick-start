@@ -35,7 +35,7 @@ class MyEditor extends React.Component {
   }
 
   componentDidMount(){
-    this.state.socket.on('docUpdate', ({ rawContentJSON, changeTypeJSON })=>{
+    this.state.socket.on('docUpdate', ({ rawContentJSON, changeTypeJSON }) => {
       var newEditorState = EditorState.push(this.state.editorState, convertFromRaw(JSON.parse(rawContentJSON)), JSON.parse(changeTypeJSON));
       this.setState({
         editorState: newEditorState
@@ -313,7 +313,7 @@ class MyEditor extends React.Component {
           history: newHistory,
           currentVersion: newHistory.length - 1
         },() => {
-          this.socket.emit('doneSaving',{
+          this.socket.emit('doneSaving', {
             state: saveStateJSON,
             timeStamp
           });
