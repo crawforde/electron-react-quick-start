@@ -26,7 +26,7 @@ class MyEditor extends React.Component {
       COLOR: 'mixed',
       SIZE: 'mixed',
       socket: openSocket(SOCKET_SERVER_URL),
-      readOnlyMode: false
+      readOnly: false
     };
     this.onChange = this.onChange.bind(this);
     this.handleKeyCommand = this.handleKeyCommand.bind(this);
@@ -379,7 +379,7 @@ class MyEditor extends React.Component {
          onChange={this.onChange}
          blockStyleFn={this.blockStyleFn}
        />
-       <Save onSave={()=>this.onSave()}/>
+       <Save onSave={()=>this.onSave()} readOnly={this.state.readOnly} />
        <History versions={this.state.history} currentVersion={this.state.currentVersion} changeVersion={(newVersion)=>this.changeVersion(newVersion)}/>
      </div>
     );

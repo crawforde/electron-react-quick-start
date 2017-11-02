@@ -18,7 +18,7 @@ class Save extends React.Component {
   render() {
     return (
       <div id="save-bar">
-         <button className="btn-save" onClick={(evt)=>this.handleSave(evt)}>Save</button>
+         <button className="btn-save" onClick={(evt)=>this.handleSave(evt)}>{(this.props.readOnly) ? 'Restore' : 'Save'}</button>
          <p>Last save: {this.state.lastSave ? this.state.lastSave.toString() : 'never'}</p>
       </div>
     );

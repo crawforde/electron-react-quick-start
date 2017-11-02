@@ -5,7 +5,7 @@ const io = require('socket.io')(server);
 
 
 io.on('connection', socket => {
-  
+
   socket.on('document', (requestedRoom) => {
     socket.document = requestedRoom.docId;
     socket.username = requestedRoom.username;
@@ -31,6 +31,7 @@ io.on('connection', socket => {
   socket.on('doneSaving', version => {
     socket.to(socket.document).emit('doneSaving', version);
   });
+
 });
 
 const port = 4390;
