@@ -25,7 +25,7 @@ class MyEditor extends React.Component {
       currentVersion: 0,
       COLOR: 'mixed',
       SIZE: 'mixed',
-      socket: openSocket('http://localhost:4390')
+      socket: openSocket(SOCKET_SERVER_URL)
     };
     this.onChange = this.onChange.bind(this);
     this.handleKeyCommand = this.handleKeyCommand.bind(this);
@@ -44,6 +44,20 @@ class MyEditor extends React.Component {
 
     this.state.socket.on('joined', (username) => {
       console.log(`${username} is viewing the document.`);
+    });
+
+    this.state.socket.on('saving', ()=>{
+      this.saving = true;
+    });
+
+    this.state.socket.on('doneSaving', (version)=>{
+      version.state = EditorState.createWithContent(convertFromRaw(JSON.parse(version.state)));
+      var newHistory = this.state.history.slice();
+      newHistory.push(version);
+      this.setState({
+        history: newHistory,
+        currentVersion: newHistory.length - 1
+      },()=>this.saving = false);
     });
 
     axios.get(`${SERVER_URL}/editorView/${this.state.username}/${this.state.docId}`)
@@ -110,7 +124,7 @@ class MyEditor extends React.Component {
     // IF THIS IS A CONTENT CHANGE...
     else {
       var rawContentJSON = JSON.stringify(convertToRaw(newState.getCurrentContent()));
-      var changeTypeJSON = JSON.stringify(newContentState.getLastChangeType());
+      var changeTypeJSON = JSON.stringify(newState.getLastChangeType());
       this.state.socket.emit('docUpdate', { rawContentJSON , changeTypeJSON });
     }
 
@@ -279,6 +293,7 @@ class MyEditor extends React.Component {
     const newContentState = this.state.editorState.getCurrentContent();
     if(!this.saving && currentContentState !== newContentState){
       this.saving = true;
+      this.state.socket.emit('saving');
       var timeStamp = new Date().toString();
       var saveState = EditorState.createWithContent(this.state.editorState.getCurrentContent());
       var saveStateJSON = JSON.stringify(convertToRaw(saveState.getCurrentContent()));
@@ -297,7 +312,13 @@ class MyEditor extends React.Component {
         this.setState({
           history: newHistory,
           currentVersion: newHistory.length - 1
-        },()=>this.saving = false);
+        },() => {
+          this.socket.emit('doneSaving',{
+            state: saveStateJSON,
+            timeStamp
+          });
+          this.saving = false;
+        });
       })
       .catch((err)=>{
         console.log('Error:',err);
