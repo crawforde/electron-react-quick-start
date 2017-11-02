@@ -248,8 +248,10 @@ class MyEditor extends React.Component {
     }
   }
 
-  onSave(evt){
-    if(!this.saving){
+  onSave(){
+    const currentContentState = this.state.history[this.state.currentVersion].state.getCurrentContent();
+    const newContentState = this.state.editorState.getCurrentContent();
+    if(!this.saving && currentContentState !== newContentState){
       this.saving = true;
       var timeStamp = new Date().toString();
       var saveState = EditorState.createWithContent(this.state.editorState.getCurrentContent());
@@ -304,7 +306,7 @@ class MyEditor extends React.Component {
          onChange={this.onChange}
          blockStyleFn={this.blockStyleFn}
        />
-       <Save onSave={(evt)=>this.onSave(evt)}/>
+       <Save onSave={()=>this.onSave()}/>
        <History versions={this.state.history} currentVersion={this.state.currentVersion} changeVersion={(newVersion)=>this.changeVersion(newVersion)}/>
      </div>
     );

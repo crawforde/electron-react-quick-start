@@ -3,11 +3,13 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import axios from 'axios';
 import { AddDocument } from './Modal';
+import openSocket from 'socket.io-client';
 
 class DocPortal extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
+      socket: openSocket('http://localhost:4390'),
       username: this.props.location.pathname.slice(11),
       pathname: this.props.location.pathname,
       docs: [],
@@ -20,6 +22,10 @@ class DocPortal extends React.Component {
       this.setState({docs: res.data});
     })
     .catch((err) => {console.log('DocPortal GET request failed', err);});
+    this.state.socket.emit('test', true);
+    this.state.socket.on('testsuccess', (test) => {
+      console.log(test);
+    });
   }
   newDocList(doc){
     this.setState({

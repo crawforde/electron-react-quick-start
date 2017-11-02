@@ -3,13 +3,12 @@ const app = express();
 const server = require('http').Server(app);
 const io = require('socket.io')(server);
 
-/*
+
 io.on('connection', socket => {
-  socket.on('username', (username) => {
-    if (!username || !username.trim()) {
-      return socket.emit('errorMessage', 'No username!');
+  socket.on('test', (test) => {
+    if (test) {
+      return socket.emit('testsuccess', 'Yay!');
     }
-    socket.username = String(username);
   });
 
   socket.on('room', requestedRoom => {
@@ -45,4 +44,8 @@ io.on('connection', socket => {
     });
   });
 });
-*/
+
+const port = 4390;
+server.listen(port, () => {
+  console.log(`Server listening on port ${port}!`);
+});
