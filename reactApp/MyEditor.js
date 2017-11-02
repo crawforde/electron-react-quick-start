@@ -37,11 +37,10 @@ class MyEditor extends React.Component {
   componentDidMount(){
 
     this.state.socket.on('docUpdate', (newRawContentJSON)=>{
-      console.log(newRawContentJSON);
-      // var newEditorState = EditorState.createWithContent(convertFromRaw(JSON.parse(newRawContentJSON)));
-      // this.setState({
-      //   editorState: newEditorState
-      // });
+      var newEditorState = EditorState.createWithContent(convertFromRaw(JSON.parse(newRawContentJSON)));
+      this.setState({
+        editorState: newEditorState
+      });
     });
     this.state.socket.on('joined', (username) => {
       console.log(`${username} is viewing the document.`);
