@@ -10,13 +10,6 @@ io.on('connection', socket => {
       return socket.emit('testsuccess', 'Yay!');
     }
   });
-  socket.on('username', username => {
-    if (!username) {
-      return socket.emit('errorMessage', 'No username!');
-    }
-    socket.username = String(username);
-  });
-
   socket.on('document', (requestedRoom) => {
     socket.document = requestedRoom.docId;
     socket.username = requestedRoom.username;
