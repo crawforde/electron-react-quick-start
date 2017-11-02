@@ -17,26 +17,23 @@ io.on('connection', socket => {
     socket.username = String(username);
   });
 
-  socket.on('document', requestedRoom => {
-    if (!requestedRoom) {
+  socket.on('document', (requestedRoom) => {
+    console.log(requestedRoom);
+    if (!requestedRoom.docId) {
       return socket.emit('errorMessage', 'No room!');
     }
     if (socket.document) {
       socket.leave(socket.document);
     }
-    socket.document = requestedRoom;
-    socket.join(requestedRoom, () => {
-      socket.to(requestedRoom).emit('joined', {
-        username: socket.username,
-        content: `${socket.username} has joined`
-      });
+    socket.document = requestedRoom.docId;
+    socket.username = requestedRoom.username;
+    socket.join(requestedRoom.docId, () => {
+      socket.to(requestedRoom.docId).emit('joined', socket.username);
     });
   });
 
-  socket.on('docUpdate', (editData, docId) =>{
-    console.log(docId);
-    socket.to(docId).emit('docUpdate','Document Updated');
-    // socket.to(socket.document).broadcast('docUpdate', editData);
+  socket.on('docUpdate', (editData) =>{
+    socket.to(socket.document).emit('docUpdate', editData);
   });
 
   socket.on('message', (message) => {
