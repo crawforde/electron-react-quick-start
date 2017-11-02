@@ -5,8 +5,10 @@ import Save from './Save';
 import History from './History';
 import { styleMap } from './editorStyles';
 import axios from 'axios';
+import openSocket from 'socket.io-client';
 
 const SERVER_URL = "http://localhost:3000";
+const SOCKET_SERVER_URL = "https://aae1cc2e.ngrok.io";
 
 class MyEditor extends React.Component {
 
@@ -22,15 +24,25 @@ class MyEditor extends React.Component {
       history: [{state : null , timeStamp : null}],
       currentVersion: 0,
       COLOR: 'mixed',
-      SIZE: 'mixed'
+      SIZE: 'mixed',
+      socket: openSocket(SOCKET_SERVER_URL)
     };
     this.onChange = this.onChange.bind(this);
     this.handleKeyCommand = this.handleKeyCommand.bind(this);
     this.blockStyleFn = this.blockStyleFn.bind(this);
     this.handleSelectionEvent = this.handleSelectionEvent.bind(this);
+    this.leaveDoc = this.leaveDoc.bind(this);
   }
 
   componentDidMount(){
+    this.state.socket.on('docUpdate', (newRawContentJSON)=>{
+      console.log(newRawContentJSON);
+      // var newEditorState = EditorState.createWithContent(convertFromRaw(JSON.parse(newRawContentJSON)));
+      // this.setState({
+      //   editorState: newEditorState
+      // });
+    });
+
     axios.get(`${SERVER_URL}/editorView/${this.state.username}/${this.state.docId}`)
     .then((resp)=>{
       var history = resp.data.version.map((version)=>({
@@ -50,12 +62,14 @@ class MyEditor extends React.Component {
 
   onChange(newState){
 
+    // const lastChangeType = newState.getLastChangeType();
     /* WE WANT TO HAVE DIRECT ACCESS TO THE FEATURES THAT ARE APPLIED TO EACH
     CHARACTER IN THE CURRENT SELECTION. THE FOLLOWING CODE DOES THIS.
     COMMENCE "THE JOURNEY OF A THOUSAND IMMUTABLES", STARRING draft.js */
 
     const currentContentState = this.state.editorState.getCurrentContent();
     const newContentState = newState.getCurrentContent();
+    // IF THIS IS NOT A CONTENT CHANGE...
     if (currentContentState === newContentState) {
       var selectionState = newState.getSelection();
       var anchorKey = selectionState.getAnchorKey();
@@ -87,6 +101,10 @@ class MyEditor extends React.Component {
         // WE NOW USE charStyles TO PERFORM SELECTION EVENT BEHAVIOR.
         this.handleSelectionEvent(charStyles);
       }
+    }
+    // IF THIS IS A CONTENT CHANGE...
+    else {
+      this.state.socket.emit('docUpdate', JSON.stringify(convertToRaw(newState.getCurrentContent())));
     }
 
     // UPDATE THE EDITOR STATE
@@ -293,6 +311,10 @@ class MyEditor extends React.Component {
     .catch((err) => {
       console.log('Logout failed', err);
     });
+  }
+
+  leaveDoc(docId){
+    this.state.socket.emit('document', '');
   }
 
   render() {
