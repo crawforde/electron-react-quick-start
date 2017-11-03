@@ -48,7 +48,7 @@ class MyEditor extends React.Component {
     this.bindThings(this);
   }
 
-// COMPONENT LIFECYCLE METHODS //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+  // COMPONENT LIFECYCLE METHODS //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
   componentDidMount(){
 
     // SET UP SOCKET EVENT LISTENERS
@@ -70,7 +70,7 @@ class MyEditor extends React.Component {
       }, ()=>{
 
         // EMIT DOCUMENT JOIN EVENT
-        this.state.socket.emit('document',{docId: this.state.docId, username: this.state.username});
+        this.socket.emit('document',{docId: this.state.docId, username: this.state.username});
 
         // REQUEST A LIVE VERSION OF THE DOCUMENT FROM OTHER EDITORS
         this.state.socket.emit('liveVersionRequest');
@@ -90,7 +90,7 @@ class MyEditor extends React.Component {
     });
   }
 
-// PRIMARY METHODS //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+  // PRIMARY METHODS //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
   onChange(newState){
     // DO NOTHING IN READ ONLY MODE
@@ -272,7 +272,7 @@ class MyEditor extends React.Component {
     );
   }
 
-// EDITOR CONTENT CHANGE HANDLERS //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+  // EDITOR CONTENT CHANGE HANDLERS //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
   handleKeyCommand(command, editorState) {
     const newState = RichUtils.handleKeyCommand(editorState, command);
     if (newState) {
@@ -302,13 +302,13 @@ class MyEditor extends React.Component {
       // Let's just allow one color,size,etc. at a time. Turn off all styles with same property type.
 
       const nextContentState = Object.keys(styleMap)
-        .filter((value)=>{
-          var type = value.split('_')[0];
-          return type === propertyType;
-        })
-        .reduce((contentState, style)=>{
-          return Modifier.removeInlineStyle(contentState, selection, style);
-        }, editorState.getCurrentContent());
+      .filter((value)=>{
+        var type = value.split('_')[0];
+        return type === propertyType;
+      })
+      .reduce((contentState, style)=>{
+        return Modifier.removeInlineStyle(contentState, selection, style);
+      }, editorState.getCurrentContent());
 
       let nextEditorState = EditorState.push(
         editorState,
@@ -359,13 +359,13 @@ class MyEditor extends React.Component {
 
   blockStyleFn(contentBlock){
     switch (contentBlock.getType()){
-    case 'TEXT_LEFT':
+      case 'TEXT_LEFT':
       return 'text-align-left';
-    case 'TEXT_CENTER':
+      case 'TEXT_CENTER':
       return 'text-align-center';
-    case 'TEXT_RIGHT':
+      case 'TEXT_RIGHT':
       return 'text-align-right';
-    default:
+      default:
       return '';
     }
   }
@@ -411,8 +411,6 @@ class MyEditor extends React.Component {
       this.logLiveState();
     });
   }
-
-
 
   bindThings(self){
     self.logLiveState = self.logLiveState.bind(self);
