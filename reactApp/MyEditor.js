@@ -113,15 +113,11 @@ class MyEditor extends React.Component {
   }
 
   handleContentChange(newContentState, lastChangeType){
-    console.log('Content change');
     var rawContentJSON = contentToJSON(newContentState);
-    console.log('Sending a live update');
     this.socket.emit('docUpdate', { rawContentJSON , lastChangeType });
   }
 
   handleSelectionChange(newContentState, newSelectionState){
-    console.log(newSelectionState.isCollapsed() ? 'cursor movement' : 'selection change');
-
     /* WE WANT TO HAVE DIRECT ACCESS TO THE FEATURES THAT ARE APPLIED TO EACH
     CHARACTER IN THE CURRENT SELECTION. THE FOLLOWING CODE DOES THIS.
     COMMENCE "THE JOURNEY OF A THOUSAND IMMUTABLES", STARRING draft.js */
