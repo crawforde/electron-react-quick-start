@@ -49,10 +49,10 @@ class MyEditor extends React.Component {
     });
 
     this.state.socket.on('joined', (username) => {
-      this.setState({
-    //    liveEditors: [...liveEditors, { username]
-        notification: `${username} is viewing the document.`
-      });
+    //   this.setState({
+    // //    liveEditors: [...liveEditors, { username]
+    //     notification: `${username} is viewing the document.`
+    //   });
     });
 
     this.state.socket.on('saving', ()=>{
