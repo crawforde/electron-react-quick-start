@@ -1,4 +1,5 @@
 import React from 'react';
+import { Link } from 'react-router-dom';
 import {Editor, EditorState, RichUtils, Modifier, convertToRaw, convertFromRaw } from 'draft-js';
 import Toolbar from './Toolbar';
 import Save from './Save';
@@ -14,6 +15,7 @@ class MyEditor extends React.Component {
 
   constructor(props) {
     super(props);
+  //  var liveEditors = {'red':}
     var pathname = props.location.pathname;
     pathname = pathname.split('/');
     this.saving = false;
@@ -26,7 +28,9 @@ class MyEditor extends React.Component {
       COLOR: 'mixed',
       SIZE: 'mixed',
       socket: openSocket(SOCKET_SERVER_URL),
-      readOnly: false
+      readOnly: false,
+//      liveEditors: ,
+      notification: ''
     };
     this.onChange = this.onChange.bind(this);
     this.handleKeyCommand = this.handleKeyCommand.bind(this);
@@ -46,7 +50,10 @@ class MyEditor extends React.Component {
     });
 
     this.state.socket.on('joined', (username) => {
-      console.log(`${username} is viewing the document.`);
+      this.setState({
+    //    liveEditors: [...liveEditors, { username]
+        notification: `${username} is viewing the document.`
+      });
     });
 
     this.state.socket.on('saving', ()=>{
@@ -355,6 +362,7 @@ class MyEditor extends React.Component {
     this.props.history.push(`/docPortal/${this.state.username}`);
   }
 
+
   render() {
     return (
       <div id="editor">
@@ -381,6 +389,7 @@ class MyEditor extends React.Component {
        />
        <Save onSave={()=>this.onSave()} readOnly={this.state.readOnly} />
        <History versions={this.state.history} currentVersion={this.state.currentVersion} changeVersion={(newVersion)=>this.changeVersion(newVersion)}/>
+       {(this.state.readOnly) ? <button onClick={() => this.changeVersion(this.state.history.length - 1)}>Go back to current edit</button> : <p></p>}
      </div>
     );
   }

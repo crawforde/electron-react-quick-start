@@ -20,6 +20,14 @@ io.on('connection', socket => {
     });
   });
 
+  socket.on('liveVersionResponse', ({content, socketId}) => {
+    socket.to(socketId).emit('liveVersionResponse', content);
+  });
+
+  socket.on('liveVersionRequest', () => {
+    socket.broadcast.to(socket.document).emit('liveVersionRequest', socket.id);
+  });
+
   socket.on('docUpdate', (changes) =>{
     socket.to(socket.document).emit('docUpdate', changes);
   });
