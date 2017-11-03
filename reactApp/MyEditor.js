@@ -8,7 +8,7 @@ import axios from 'axios';
 import openSocket from 'socket.io-client';
 
 const SERVER_URL = "http://localhost:3000";
-const SOCKET_SERVER_URL = "https://aae1cc2e.ngrok.io";
+const SOCKET_SERVER_URL = "http://eaacacab.ngrok.io";
 
 class MyEditor extends React.Component {
 
@@ -19,6 +19,8 @@ class MyEditor extends React.Component {
     pathname = pathname.split('/');
     this.editorColors = ['red','blue','yellow','green','purple','lightpink'];
     this.saving = false;
+    this.receivedLive = false;
+    this.socket = openSocket(SOCKET_SERVER_URL);
     this.state = {
       docId: pathname.pop(),
       username: pathname.pop(),
@@ -28,11 +30,9 @@ class MyEditor extends React.Component {
       currentVersion: 0,
       COLOR: 'mixed',
       SIZE: 'mixed',
-      socket: openSocket(SOCKET_SERVER_URL),
       readOnly: false,
       //liveEditors: ,
-      notification: '',
-      receivedLive: false
+      notification: ''
     };
 
     // BIND COMPONENT METHODS
@@ -44,49 +44,60 @@ class MyEditor extends React.Component {
     this.updateLive = this.updateLive.bind(this);
   }
 
-// COMPONENT LIFECYCLE METHODS //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+  // COMPONENT LIFECYCLE METHODS //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
   componentDidMount(){
 
-    // LOOK FOR LIVE VERSIONS FROM OTHER ACTIVE EDITORS WHEN WE FIRST JOIN
-    this.state.socket.on('liveVersionResponse',(rawContentJSON)=>{
-      const content = this.contentFromJSON(rawContentJSON);
-      const newEditorState = EditorState.createWithContent(content);
-      this.updateLive(newEditorState);
+    //LOOK FOR LIVE VERSIONS FROM OTHER ACTIVE EDITORS WHEN WE FIRST JOIN
+    this.socket.on('liveVersionResponse',(rawContentJSON)=>{
+      if(!this.receivedLive){
+        this.receivedLive = true;
+        const content = this.contentFromJSON(rawContentJSON);
+        const newEditorState = EditorState.createWithContent(content);
+        this.updateLive(newEditorState);
+      }
     });
 
     // LOOK FOR REQUESTS FROM OTHER USERS FOR LIVE VERSIONS OF THE DOCUMENT
-    this.state.socket.on('liveVersionRequest', (socketId)=>{
+    this.socket.on('liveVersionRequest', (socketId)=>{
       const content = this.contentToJSON(this.state.liveState.getCurrentContent());
-      this.state.socket.emit('liveVersionResponse',{
+      this.socket.emit('liveVersionResponse',{
         content,
         socketId
       });
     });
 
     // SET UP SOCKET BEHAVIOR: IF SOMEBODY MAKES A LIVE UPDATE TO THE DOCUMENT, ADD THIS CHANGE TO OUR LIVE VERSION
-    this.state.socket.on('docUpdate', ({ rawContentJSON, changeTypeJSON }) => {
+    this.socket.on('docUpdate', ({ rawContentJSON, changeTypeJSON }) => {
       const content = this.contentFromJSON(rawContentJSON);
       const changeType = JSON.parse(changeTypeJSON);
       const newEditorState = EditorState.push(this.state.editorState, content, changeType);
       this.updateLive(newEditorState);
     });
 
+    this.socket.on('userLeft', (username) => {
+      console.log(`${username} is left the document.`);
+    });
     // SET UP SOCKET BEHAVIOR: ALERT THE CLIENT IF SOMEBODY NEW OPENS THE DOCUMENT
-    this.state.socket.on('joined', (username) => {
-  //     this.setState({
-  //  //    liveEditors: [...liveEditors, { username]
-  //      notification: `${username} is viewing the document.`
-  //    });
+    this.socket.on('joined', (username) => {
+      //     this.setState({
+      //  //    liveEditors: [...liveEditors, { username]
+      //      notification: `${username} is viewing the document.`
+      //    });
       console.log(`${username} is viewing the document.`);
     });
 
+    this.socket.on('failedToJoin', (userRoom) => {
+      console.log(`${userRoom.username} failed to join ${userRoom.docId}.`);
+      this.leaveDoc(userRoom.username);
+    });
+
     // SET UP SOCKET BEHAVIOR: TEMPORARILY DISABLE SAVING WHILE ANOTHER EDITOR IS DOING SO
-    this.state.socket.on('saving', ()=>{
+    this.socket.on('saving', ()=>{
       this.saving = true;
     });
 
     // SET UP SOCKET BEHAVIOR: RE-ENABLE SAVING AND UPDATE DOCUMENT VERSION HISTORY WHEN ANOTHER EDITOR COMPLETES A SUCCESSFUL SAVE
-    this.state.socket.on('doneSaving', (version)=>{
+    this.socket.on('doneSaving', (version)=>{
       version.state = EditorState.createWithContent(this.contentFromJSON(version.state));
       var newHistory = this.state.history.slice();
       newHistory.push(version);
@@ -112,10 +123,11 @@ class MyEditor extends React.Component {
       }, ()=>{
 
         // EMIT DOCUMENT JOIN EVENT
-        this.state.socket.emit('document',{docId: this.state.docId, username: this.state.username});
+        this.socket.emit('document',{docId: this.state.docId, username: this.state.username});
 
         // REQUEST LIVE VERSION OF THE DOCUMENT FROM OTHER EDITORS
-        this.state.socket.emit('liveVersionRequest');
+        this.socket.emit('liveVersionRequest');
+
       });
     })
     .catch((err)=>{
@@ -123,7 +135,7 @@ class MyEditor extends React.Component {
     });
   }
 
-// PRIMARY METHODS //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+  // PRIMARY METHODS //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
   onChange(newState){
 
@@ -171,7 +183,7 @@ class MyEditor extends React.Component {
       else {
         var rawContentJSON = this.contentToJSON(newState.getCurrentContent());
         var changeTypeJSON = JSON.stringify(newState.getLastChangeType());
-        this.state.socket.emit('docUpdate', { rawContentJSON , changeTypeJSON });
+        this.socket.emit('docUpdate', { rawContentJSON , changeTypeJSON });
       }
 
       // UPDATE THE STATE WITH THE NEW EDITOR STATE
@@ -185,7 +197,7 @@ class MyEditor extends React.Component {
     // DON'T SAVE IF THERE HAS BEEN NO CONTENT CHANGE SINCE THE LAST SAVE
     if(!this.saving && currentContentState !== newContentState){
       this.saving = true;
-      this.state.socket.emit('saving');
+      this.socket.emit('saving');
       var timeStamp = new Date().toString();
       var saveState = EditorState.createWithContent(this.state.editorState.getCurrentContent());
       var saveStateJSON = this.contentToJSON(saveState.getCurrentContent());
@@ -205,7 +217,7 @@ class MyEditor extends React.Component {
           history: newHistory,
           currentVersion: newHistory.length - 1
         },() => {
-          this.state.socket.emit('doneSaving', {
+          this.socket.emit('doneSaving', {
             state: saveStateJSON,
             timeStamp
           });
@@ -236,13 +248,15 @@ class MyEditor extends React.Component {
     }
   }
 
-  leaveDoc(docId){
-    this.state.socket.emit('document', this.state.docId);
+  leaveDoc(){
+    this.socket.emit('leaveDoc', {docId: this.state.docId, username: this.state.username});
+    this.socket.disconnect();
     this.props.history.push(`/docPortal/${this.state.username}`);
   }
 
   logout(){
-    this.state.socket.emit('document', this.state.docId);
+    this.socket.emit('leaveDoc', {docId: this.state.docId, username: this.state.username});
+    this.socket.disconnect();
     axios.get('http://localhost:3000/logout')
     .then(() => this.props.history.push('/login'))
     .catch((err) => {
@@ -260,28 +274,28 @@ class MyEditor extends React.Component {
           <button onClick={() => this.leaveDoc()}>Back to Documents portal</button>
           <button onClick={() => this.logout()}>Log Out</button>
         </div>
-       <Toolbar
-         COLOR={this.state.COLOR}
-         SIZE={this.state.SIZE}
-         setInlineStyle={(styleName)=>this.setInlineStyle(styleName)}
-         setBlockStyle={(styleName)=>this.setBlockStyle(styleName)}
-         toggleStrictInlineStyle={(fontSize,propertyType)=>this.toggleStrictInlineStyle(fontSize,propertyType)}
-       />
-       <Editor
-         customStyleMap={styleMap}
-         editorState={this.state.editorState}
-         handleKeyCommand={this.handleKeyCommand}
-         onChange={this.onChange}
-         blockStyleFn={this.blockStyleFn}
-       />
-       <Save onSave={()=>this.onSave()} readOnly={this.state.readOnly} />
-       <History versions={this.state.history} currentVersion={this.state.currentVersion} changeVersion={(newVersion)=>this.changeVersion(newVersion)}/>
-       {(this.state.readOnly) ? <button onClick={() => this.changeVersion(this.state.history.length - 1)}>Go back to current edit</button> : <p></p>}
-     </div>
+        <Toolbar
+          COLOR={this.state.COLOR}
+          SIZE={this.state.SIZE}
+          setInlineStyle={(styleName)=>this.setInlineStyle(styleName)}
+          setBlockStyle={(styleName)=>this.setBlockStyle(styleName)}
+          toggleStrictInlineStyle={(fontSize,propertyType)=>this.toggleStrictInlineStyle(fontSize,propertyType)}
+        />
+        <Editor
+          customStyleMap={styleMap}
+          editorState={this.state.editorState}
+          handleKeyCommand={this.handleKeyCommand}
+          onChange={this.onChange}
+          blockStyleFn={this.blockStyleFn}
+        />
+        <Save onSave={()=>this.onSave()} readOnly={this.state.readOnly} />
+        <History versions={this.state.history} currentVersion={this.state.currentVersion} changeVersion={(newVersion)=>this.changeVersion(newVersion)}/>
+        {(this.state.readOnly) ? <button onClick={() => this.changeVersion(this.state.history.length - 1)}>Go back to current edit</button> : <p></p>}
+      </div>
     );
   }
 
-// EDITOR CONTENT CHANGE HANDLERS //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+  // EDITOR CONTENT CHANGE HANDLERS //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
   handleKeyCommand(command, editorState) {
     const newState = RichUtils.handleKeyCommand(editorState, command);
     if (newState) {
@@ -311,13 +325,13 @@ class MyEditor extends React.Component {
       // Let's just allow one color,size,etc. at a time. Turn off all styles with same property type.
 
       const nextContentState = Object.keys(styleMap)
-        .filter((value)=>{
-          var type = value.split('_')[0];
-          return type === propertyType;
-        })
-        .reduce((contentState, style)=>{
-          return Modifier.removeInlineStyle(contentState, selection, style);
-        }, editorState.getCurrentContent());
+      .filter((value)=>{
+        var type = value.split('_')[0];
+        return type === propertyType;
+      })
+      .reduce((contentState, style)=>{
+        return Modifier.removeInlineStyle(contentState, selection, style);
+      }, editorState.getCurrentContent());
 
       let nextEditorState = EditorState.push(
         editorState,
@@ -368,18 +382,18 @@ class MyEditor extends React.Component {
 
   blockStyleFn(contentBlock){
     switch (contentBlock.getType()){
-    case 'TEXT_LEFT':
+      case 'TEXT_LEFT':
       return 'text-align-left';
-    case 'TEXT_CENTER':
+      case 'TEXT_CENTER':
       return 'text-align-center';
-    case 'TEXT_RIGHT':
+      case 'TEXT_RIGHT':
       return 'text-align-right';
-    default:
+      default:
       return '';
     }
   }
 
-// UTILITIES //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+  // UTILITIES //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
   updateLive(newEditorState){
     if(this.state.readOnly){
       this.setState({
