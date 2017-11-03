@@ -73,7 +73,7 @@ class MyEditor extends React.Component {
         this.socket.emit('document',{docId: this.state.docId, username: this.state.username});
 
         // REQUEST A LIVE VERSION OF THE DOCUMENT FROM OTHER EDITORS
-        this.state.socket.emit('liveVersionRequest');
+        this.socket.emit('liveVersionRequest');
 
         // THIS IS THE MAXIMUM AMOUNT OF TIME THAT WE WILL WAIT FOR A LIVE VERSION
         setTimeout(()=>{
@@ -115,7 +115,7 @@ class MyEditor extends React.Component {
   handleContentChange(newContentState, lastChangeType){
     console.log('Content change');
     var rawContentJSON = contentToJSON(newContentState);
-    this.state.socket.emit('docUpdate', { rawContentJSON , lastChangeType });
+    this.socket.emit('docUpdate', { rawContentJSON , lastChangeType });
   }
 
   handleSelectionChange(newContentState, newSelectionState){
@@ -167,7 +167,7 @@ class MyEditor extends React.Component {
       return;
     }
     this.saving = true;
-    this.state.socket.emit('saving');
+    this.socket.emit('saving');
     var timeStamp = new Date().toString();
     var saveState = EditorState.createWithContent(this.state.editorState.getCurrentContent());
     var saveStateJSON = contentToJSON(saveState.getCurrentContent());
@@ -187,7 +187,7 @@ class MyEditor extends React.Component {
         history: newHistory,
         currentVersion: newHistory.length - 1
       },() => {
-        this.state.socket.emit('doneSaving', {
+        this.socket.emit('doneSaving', {
           state: saveStateJSON,
           timeStamp
         });
