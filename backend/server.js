@@ -11,8 +11,8 @@ var models = require('../models/models.js');
 var User = models.User;
 var app = express();
 
-// view engine setup
 
+// view engine setup
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: false }));
 
@@ -91,6 +91,7 @@ app.use(function(err, req, res, next) {
   });
 });
 
-app.listen(3000, function () {
+var server = app.listen(3000, function () {
   console.log('Backend server for Electron App running on port 3000!');
 });
+require('./webSockets')(server);

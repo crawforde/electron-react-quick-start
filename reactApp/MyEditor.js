@@ -27,7 +27,7 @@ class MyEditor extends React.Component {
     this.editorColors = ['red','blue','yellow','green','purple','lightpink'];
     this.saving = false;
     this.receivedLive = false;
-    this.socket = openSocket(SOCKET_SERVER_URL);
+    this.socket = openSocket(SERVER_URL);
     this.liveRequest;
     this.state = {
       loading: true,
