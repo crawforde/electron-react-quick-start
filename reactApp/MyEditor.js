@@ -56,7 +56,7 @@ class MyEditor extends React.Component {
 
     // LOOK FOR REQUESTS FROM OTHER USERS FOR LIVE VERSIONS OF THE DOCUMENT
     this.state.socket.on('liveVersionRequest', (socketId)=>{
-      const content = this.contentToJSON(this.liveState.getCurrentContent());
+      const content = this.contentToJSON(this.state.liveState.getCurrentContent());
       this.state.socket.emit('liveVersionResponse',{
         content,
         socketId

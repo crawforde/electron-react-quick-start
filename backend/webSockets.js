@@ -25,7 +25,7 @@ io.on('connection', socket => {
   });
 
   socket.on('liveVersionRequest', () => {
-    socket.broadcast.to(socket.document).emit('liveVersionRequest', socket.id);
+    socket.to(socket.document).emit('liveVersionRequest', socket.id);
   });
 
   socket.on('docUpdate', (changes) =>{
