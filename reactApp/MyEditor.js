@@ -115,6 +115,10 @@ class MyEditor extends React.Component {
   handleContentChange(newContentState, lastChangeType){
     console.log('Content change');
     var rawContentJSON = contentToJSON(newContentState);
+<<<<<<< HEAD
+=======
+    console.log('Sending a live update');
+>>>>>>> 95cc40208953ed10918c58b6c562075d01661477
     this.socket.emit('docUpdate', { rawContentJSON , lastChangeType });
   }
 
