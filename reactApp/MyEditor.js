@@ -15,7 +15,6 @@ class MyEditor extends React.Component {
 
   constructor(props) {
     super(props);
-  //  var liveEditors = {'red':}
     var pathname = props.location.pathname;
     pathname = pathname.split('/');
     this.saving = false;
