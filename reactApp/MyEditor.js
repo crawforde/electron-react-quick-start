@@ -29,7 +29,7 @@ class MyEditor extends React.Component {
       SIZE: 'mixed',
       socket: openSocket(SOCKET_SERVER_URL),
       readOnly: false,
-//      liveEditors: ,
+      //liveEditors: ,
       notification: ''
     };
     this.onChange = this.onChange.bind(this);
