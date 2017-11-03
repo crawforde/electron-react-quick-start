@@ -1,17 +1,8 @@
 import React from 'react';
 import Modal from 'react-modal';
 import axios from 'axios';
+import { modalStyles } from '../public/styles/styles.js';
 
-const customStyles = {
-  content : {
-    top                   : '50%',
-    left                  : '50%',
-    right                 : 'auto',
-    bottom                : 'auto',
-    marginRight           : '-50%',
-    transform             : 'translate(-50%, -50%)'
-  }
-};
 class AddDocument extends React.Component {
   constructor(props){
     super(props);
@@ -62,7 +53,7 @@ class AddDocument extends React.Component {
         <button onClick={() => this.prompt()}>{(this.props.newDoc) ? 'Create New Document' : 'Add Collaboration'}</button>
         <Modal
           isOpen={this.state.modalOpen}
-          style={customStyles}
+          style={modalStyles}
           contentLabel={(this.props.newDoc) ? "New Document" : "New Collaboration"}
           >
             <h2>Type in password to collaborate.</h2>

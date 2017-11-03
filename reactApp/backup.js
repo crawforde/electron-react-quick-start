@@ -1,14 +1,21 @@
 import React from 'react';
-import { Editor, EditorState, RichUtils, Modifier, convertToRaw, convertFromRaw } from 'draft-js';
+import { Editor, EditorState, RichUtils, Modifier } from 'draft-js';
 import Toolbar from './Toolbar';
 import Save from './Save';
 import History from './History';
 import { styleMap } from './editorStyles';
 import axios from 'axios';
 import openSocket from 'socket.io-client';
+import Modal from 'react-modal';
+import { modalStyles } from '../public/styles/styles.js';
+import { contentFromJSON, contentToJSON, assignDropdownValues } from './staticMethods';
+import setUpClientSocket from './setUpClientSocket';
 
 const SERVER_URL = "http://localhost:3000";
-const SOCKET_SERVER_URL = "https://aae1cc2e.ngrok.io";
+const SOCKET_SERVER_URL = "http://eaacacab.ngrok.io";
+const LIVE_VERSION_WAIT_TIME = 3;                           // MAXIMUM NUMBER OF SECONDS WE ARE WILLING TO WAIT FOR A LIVE VERSION OF THE DOCUMENT FROM OTHER EDITORS
+
+
 
 class MyEditor extends React.Component {
 
@@ -19,7 +26,11 @@ class MyEditor extends React.Component {
     pathname = pathname.split('/');
     this.editorColors = ['red','blue','yellow','green','purple','lightpink'];
     this.saving = false;
+    this.receivedLive = false;
+    this.socket = openSocket(SOCKET_SERVER_URL);
+    this.liveRequest;
     this.state = {
+      loading: true,
       docId: pathname.pop(),
       username: pathname.pop(),
       editorState: EditorState.createEmpty(),
@@ -28,79 +39,26 @@ class MyEditor extends React.Component {
       currentVersion: 0,
       COLOR: 'mixed',
       SIZE: 'mixed',
-      socket: openSocket(SOCKET_SERVER_URL),
       readOnly: false,
       //liveEditors: ,
-      notification: '',
-      receivedLive: false
+      notification: ''
     };
 
     // BIND COMPONENT METHODS
-    this.onChange = this.onChange.bind(this);
-    this.handleKeyCommand = this.handleKeyCommand.bind(this);
-    this.blockStyleFn = this.blockStyleFn.bind(this);
-    this.handleSelectionEvent = this.handleSelectionEvent.bind(this);
-    this.leaveDoc = this.leaveDoc.bind(this);
-    this.updateLive = this.updateLive.bind(this);
+    this.bindThings(this);
   }
 
 // COMPONENT LIFECYCLE METHODS //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
   componentDidMount(){
 
-    // LOOK FOR LIVE VERSIONS FROM OTHER ACTIVE EDITORS WHEN WE FIRST JOIN
-    this.state.socket.on('liveVersionResponse',(rawContentJSON)=>{
-      const content = this.contentFromJSON(rawContentJSON);
-      const newEditorState = EditorState.createWithContent(content);
-      this.updateLive(newEditorState);
-    });
-
-    // LOOK FOR REQUESTS FROM OTHER USERS FOR LIVE VERSIONS OF THE DOCUMENT
-    this.state.socket.on('liveVersionRequest', (socketId)=>{
-      const content = this.contentToJSON(this.liveState.getCurrentContent());
-      this.state.socket.emit('liveVersionResponse',{
-        content,
-        socketId
-      });
-    });
-
-    // SET UP SOCKET BEHAVIOR: IF SOMEBODY MAKES A LIVE UPDATE TO THE DOCUMENT, ADD THIS CHANGE TO OUR LIVE VERSION
-    this.state.socket.on('docUpdate', ({ rawContentJSON, changeTypeJSON }) => {
-      const content = this.contentFromJSON(rawContentJSON);
-      const changeType = JSON.parse(changeTypeJSON);
-      const newEditorState = EditorState.push(this.state.editorState, content, changeType);
-      this.updateLive(newEditorState);
-    });
-
-    // SET UP SOCKET BEHAVIOR: ALERT THE CLIENT IF SOMEBODY NEW OPENS THE DOCUMENT
-    this.state.socket.on('joined', (username) => {
-  //     this.setState({
-  //  //    liveEditors: [...liveEditors, { username]
-  //      notification: `${username} is viewing the document.`
-  //    });
-      console.log(`${username} is viewing the document.`);
-    });
-
-    // SET UP SOCKET BEHAVIOR: TEMPORARILY DISABLE SAVING WHILE ANOTHER EDITOR IS DOING SO
-    this.state.socket.on('saving', ()=>{
-      this.saving = true;
-    });
-
-    // SET UP SOCKET BEHAVIOR: RE-ENABLE SAVING AND UPDATE DOCUMENT VERSION HISTORY WHEN ANOTHER EDITOR COMPLETES A SUCCESSFUL SAVE
-    this.state.socket.on('doneSaving', (version)=>{
-      version.state = EditorState.createWithContent(this.contentFromJSON(version.state));
-      var newHistory = this.state.history.slice();
-      newHistory.push(version);
-      this.setState({
-        history: newHistory,
-        currentVersion: this.state.readOnly ? this.state.currentVersion : newHistory.length - 1
-      },()=>this.saving = false);
-    });
+    // SET UP SOCKET EVENT LISTENERS
+    setUpClientSocket.bind(this)();
 
     // REQUEST DOCUMENT INFORMATION
     axios.get(`${SERVER_URL}/editorView/${this.state.username}/${this.state.docId}`)
     .then((resp)=>{
       const history = resp.data.version.map((version)=>({
-        state: EditorState.createWithContent(this.contentFromJSON(version.state)),
+        state: EditorState.createWithContent(contentFromJSON(version.state)),
         timeStamp: version.timeStamp
       }));
       const editorState = EditorState.createWithContent(history[history.length - 1].state.getCurrentContent());
@@ -114,8 +72,17 @@ class MyEditor extends React.Component {
         // EMIT DOCUMENT JOIN EVENT
         this.state.socket.emit('document',{docId: this.state.docId, username: this.state.username});
 
-        // REQUEST LIVE VERSION OF THE DOCUMENT FROM OTHER EDITORS
+        // REQUEST A LIVE VERSION OF THE DOCUMENT FROM OTHER EDITORS
         this.state.socket.emit('liveVersionRequest');
+
+        // THIS IS THE MAXIMUM AMOUNT OF TIME THAT WE WILL WAIT FOR A LIVE VERSION
+        setTimeout(()=>{
+          if(!this.receivedLive) {
+            this.receivedLive = true;
+            this.removeLoadScreen();
+          }
+        }, 1000 * LIVE_VERSION_WAIT_TIME);
+
       });
     })
     .catch((err)=>{
@@ -126,96 +93,110 @@ class MyEditor extends React.Component {
 // PRIMARY METHODS //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
   onChange(newState){
+    // DO NOTHING IN READ ONLY MODE
+    if(this.state.readOnly) return;
 
-    if(!this.state.readOnly){  // const lastChangeType = newState.getLastChangeType();
-      /* WE WANT TO HAVE DIRECT ACCESS TO THE FEATURES THAT ARE APPLIED TO EACH
-      CHARACTER IN THE CURRENT SELECTION. THE FOLLOWING CODE DOES THIS.
-      COMMENCE "THE JOURNEY OF A THOUSAND IMMUTABLES", STARRING draft.js */
+    var newContentState = newState.getCurrentContent();
+    var newSelection = newState.getSelection();
 
-      const currentContentState = this.state.editorState.getCurrentContent();
-      const newContentState = newState.getCurrentContent();
-      // IF THIS IS NOT A CONTENT CHANGE...
-      if (currentContentState === newContentState) {
-        var selectionState = newState.getSelection();
-        var anchorKey = selectionState.getAnchorKey();
-        var contentBlock = newContentState.getBlockForKey(anchorKey);
-        var start = selectionState.getStartOffset();
-        var end = selectionState.getEndOffset();
-        var chars = contentBlock.getCharacterList()._tail;
-        if(chars){
-          var charStyles = chars.array.map((metadata)=>{
-            return metadata.getStyle() ? metadata.getStyle()._map._list : metadata;
-          });
-          charStyles = charStyles.slice(start,end);
-          charStyles = charStyles.map((list)=>{
-            if(list._tail){
-              return list._tail.array.map((feature)=>{
-                return feature ? feature[0] : feature;
-              });
-            }
-            return false;
-          });
-
-          /* AFTER COMPLETING THIS TERRIFYING JOURNEY THROUGH THE EDITOR STATE,
-          WE FINALLY HAVE SOMETHING USEFUL STORED IN charStyles. THIS IS AN ARRAY
-          WITH EACH INDEX CORRESPONDING TO A CHARACTER IN THE SELECTION. THE
-          CONTENT AT ANY PARTICULAR INDEX IS EITHER AN ARRAY OF FEATURES APPLIED
-          TO THAT CHARACTER (FEATURES REPRESENTED BY THEIR NAMES, AS STRINGS),
-          OR false, IF NO FEATURES ARE APPLIED. */
-
-          // WE NOW USE charStyles TO PERFORM SELECTION EVENT BEHAVIOR.
-          this.handleSelectionEvent(charStyles);
-        }
-      }
-      // IF THIS IS A CONTENT CHANGE...
-      else {
-        var rawContentJSON = this.contentToJSON(newState.getCurrentContent());
-        var changeTypeJSON = JSON.stringify(newState.getLastChangeType());
-        this.state.socket.emit('docUpdate', { rawContentJSON , changeTypeJSON });
-      }
-
-      // UPDATE THE STATE WITH THE NEW EDITOR STATE
+    // IF THERE HAS BEEN A CONTENT CHANGE...
+    if(newContentState !== this.state.editorState.getCurrentContent()){
+      this.handleContentChange(newContentState, newState.getLastChangeType());
       this.updateLive(newState);
+    }
+
+    // IF THERE HAS BEEN A SELECTION EVENT...
+    else if(newSelection !== this.state.editorState.getSelection()){
+      var dropDownValues = this.handleSelectionChange(newContentState, newSelection);
+      this.updateLive(newState, false, dropDownValues);
+    }
+  }
+
+  handleContentChange(newContentState, lastChangeType){
+    console.log('Content change');
+    var rawContentJSON = contentToJSON(newContentState);
+    this.state.socket.emit('docUpdate', { rawContentJSON , lastChangeType });
+  }
+
+  handleSelectionChange(newContentState, newSelectionState){
+    console.log(newSelectionState.isCollapsed() ? 'cursor movement' : 'selection change');
+
+    /* WE WANT TO HAVE DIRECT ACCESS TO THE FEATURES THAT ARE APPLIED TO EACH
+    CHARACTER IN THE CURRENT SELECTION. THE FOLLOWING CODE DOES THIS.
+    COMMENCE "THE JOURNEY OF A THOUSAND IMMUTABLES", STARRING draft.js */
+    var anchorKey = newSelectionState.getAnchorKey();
+    var contentBlock = newContentState.getBlockForKey(anchorKey);
+    var start = newSelectionState.getStartOffset();
+    var end = newSelectionState.getEndOffset();
+    var chars = contentBlock.getCharacterList()._tail;
+    if(chars){
+      var charStyles = chars.array.map((metadata)=>{
+        return metadata.getStyle() ? metadata.getStyle()._map._list : metadata;
+      });
+      charStyles = charStyles.slice(start,end);
+      charStyles = charStyles.map((list)=>{
+        if(list._tail){
+          return list._tail.array.map((feature)=>{
+            return feature ? feature[0] : feature;
+          });
+        }
+        return false;
+      });
+
+      /* AFTER COMPLETING THIS TERRIFYING JOURNEY THROUGH THE EDITOR STATE,
+      WE FINALLY HAVE SOMETHING USEFUL STORED IN charStyles. THIS IS AN ARRAY
+      WITH EACH INDEX CORRESPONDING TO A CHARACTER IN THE SELECTION. THE
+      CONTENT AT ANY PARTICULAR INDEX IS EITHER AN ARRAY OF FEATURES APPLIED
+      TO THAT CHARACTER (FEATURES REPRESENTED BY THEIR NAMES, AS STRINGS),
+      OR false, IF NO FEATURES ARE APPLIED. */
+
+      // WE NOW USE charStyles TO PERFORM SELECTION EVENT BEHAVIOR.
+      return assignDropdownValues(charStyles);
     }
   }
 
   onSave(){
-    const currentContentState = this.state.history[this.state.currentVersion].state.getCurrentContent();
-    const newContentState = this.state.editorState.getCurrentContent();
-    // DON'T SAVE IF THERE HAS BEEN NO CONTENT CHANGE SINCE THE LAST SAVE
-    if(!this.saving && currentContentState !== newContentState){
-      this.saving = true;
-      this.state.socket.emit('saving');
-      var timeStamp = new Date().toString();
-      var saveState = EditorState.createWithContent(this.state.editorState.getCurrentContent());
-      var saveStateJSON = this.contentToJSON(saveState.getCurrentContent());
-      axios.post(`${SERVER_URL}/editorView/${this.state.docId}/save`,{
-        newVersion: {
-          timeStamp,
-          state: saveStateJSON
-        }
-      })
-      .then(()=>{
-        var newHistory = this.state.history.slice();
-        newHistory.push({
-          timeStamp,
-          state: saveState
-        });
-        this.setState({
-          history: newHistory,
-          currentVersion: newHistory.length - 1
-        },() => {
-          this.state.socket.emit('doneSaving', {
-            state: saveStateJSON,
-            timeStamp
-          });
-          this.saving = false;
-        });
-      })
-      .catch((err)=>{
-        console.log('Error:',err);
-      });
+    // DON'T SAVE IF WE'RE IN READ ONLY MODE
+    if(this.state.readOnly){
+      return;
     }
+    const currentContentState = this.state.history[this.state.history.length - 1].state.getCurrentContent();
+    const newContentState = this.state.liveState.getCurrentContent();
+    // DON'T SAVE IF THERE HAS BEEN NO CONTENT CHANGE SINCE THE LAST SAVE
+    if(this.saving || currentContentState === newContentState){
+      return;
+    }
+    this.saving = true;
+    this.state.socket.emit('saving');
+    var timeStamp = new Date().toString();
+    var saveState = EditorState.createWithContent(this.state.editorState.getCurrentContent());
+    var saveStateJSON = contentToJSON(saveState.getCurrentContent());
+    axios.post(`${SERVER_URL}/editorView/${this.state.docId}/save`,{
+      newVersion: {
+        timeStamp,
+        state: saveStateJSON
+      }
+    })
+    .then(()=>{
+      var newHistory = this.state.history.slice();
+      newHistory.push({
+        timeStamp,
+        state: saveState
+      });
+      this.setState({
+        history: newHistory,
+        currentVersion: newHistory.length - 1
+      },() => {
+        this.state.socket.emit('doneSaving', {
+          state: saveStateJSON,
+          timeStamp
+        });
+        this.saving = false;
+      });
+    })
+    .catch((err)=>{
+      console.log('Error:',err);
+    });
   }
 
   changeVersion(newVersion){
@@ -236,14 +217,17 @@ class MyEditor extends React.Component {
     }
   }
 
-  leaveDoc(docId){
-    this.state.socket.emit('document', this.state.docId);
+  leaveDoc(){
+    this.socket.emit('leaveDoc', {docId: this.state.docId, username: this.state.username});
+    this.socket.disconnect();
     this.props.history.push(`/docPortal/${this.state.username}`);
   }
 
+
   logout(){
-    this.state.socket.emit('document', this.state.docId);
-    axios.get('http://localhost:3000/logout')
+    this.socket.emit('leaveDoc', {docId: this.state.docId, username: this.state.username});
+    this.socket.disconnect();
+    axios.get(`${SERVER_URL}/logout`)
     .then(() => this.props.history.push('/login'))
     .catch((err) => {
       console.log('Logout failed', err);
@@ -260,6 +244,13 @@ class MyEditor extends React.Component {
           <button onClick={() => this.leaveDoc()}>Back to Documents portal</button>
           <button onClick={() => this.logout()}>Log Out</button>
         </div>
+        <Modal
+          isOpen={this.state.loading}
+          style={modalStyles}
+          contentLabel={(this.props.newDoc) ? "New Document" : "New Collaboration"}
+          >
+            <h2>Loading...</h2>
+       </Modal>
        <Toolbar
          COLOR={this.state.COLOR}
          SIZE={this.state.SIZE}
@@ -380,85 +371,57 @@ class MyEditor extends React.Component {
   }
 
 // UTILITIES //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-  updateLive(newEditorState){
+  logLiveState(){
+    console.log(this.state.liveState.toJS());
+  }
+
+  updateLive(newEditorState, removeLoadScreen, newDropDownValues){
     if(this.state.readOnly){
       this.setState({
         liveState: newEditorState
+      },()=>{
+        if (removeLoadScreen){
+          this.removeLoadScreen();
+        }
       });
     }
     else {
+      var COLOR = this.state.COLOR, SIZE = this.state.SIZE;
+      if(newDropDownValues){
+        COLOR = newDropDownValues.COLOR;
+        SIZE = newDropDownValues.SIZE;
+      }
       this.setState({
         liveState: newEditorState,
-        editorState: newEditorState
+        editorState: newEditorState,
+        COLOR,
+        SIZE
+      },()=>{
+        if (removeLoadScreen){
+          this.removeLoadScreen();
+        }
       });
     }
   }
 
-  contentFromJSON(rawContentJSON){
-    return convertFromRaw(JSON.parse(rawContentJSON));
-  }
-
-  contentToJSON(content){
-    return JSON.stringify(convertToRaw(content));
-  }
-
-  handleSelectionEvent(charStyles){
-    var color = false;
-    var size = false;
-    var colors = charStyles.map((styles)=>this.getStyle(styles,'COLOR'));
-    if(colors.length > 0){
-      color = this.describeStyle(colors);
-    }
-    var sizes = charStyles.map((styles)=>this.getStyle(styles,'SIZE'));
-    if(sizes.length > 0) {
-      size = this.describeStyle(sizes);
-    }
-    if(!color){
-      color = 'mixed';
-    }
-    if(!size){
-      size = 'mixed';
-    }
+  removeLoadScreen(){
     this.setState({
-      COLOR: color,
-      SIZE: size
+      loading: false
+    },()=>{
+      this.logLiveState();
     });
   }
 
-  describeStyle(arr){
-    var value = arr.pop();
-    try{
-      arr.forEach((val)=>{
-        if(val !== value){
-          throw('Mixed Styles');
-        }
-      });
-    } catch(err) {
-      return 'mixed';
-    }
-    return value;
-  }
 
-  getStyle(styles, styleType){
-    if(!styles || styles.length === 0){
-      return false;
-    }
-    try {
-      styles.forEach((styleName)=>{
-        if(styleName){
-          var arr = styleName.split('_');
-          if(arr[0]===styleType){
-            throw(styleName);
-          }
-        }
-      });
-    } catch(err){
-      if (typeof err === 'string'){
-        return err;
-      }
-      console.log('Error:', err);
-    }
-    return false;
+
+  bindThings(self){
+    self.logLiveState = self.logLiveState.bind(self);
+    self.onChange = self.onChange.bind(self);
+    self.handleKeyCommand = self.handleKeyCommand.bind(self);
+    self.blockStyleFn = self.blockStyleFn.bind(self);
+    self.leaveDoc = self.leaveDoc.bind(self);
+    self.updateLive = self.updateLive.bind(self);
+    self.removeLoadScreen = self.removeLoadScreen.bind(self);
   }
 }
 
