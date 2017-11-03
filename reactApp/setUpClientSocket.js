@@ -23,6 +23,7 @@ function setUpClientSocket(){
 
   // SET UP SOCKET BEHAVIOR: IF SOMEBODY MAKES A LIVE UPDATE TO THE DOCUMENT, ADD THIS CHANGE TO OUR LIVE VERSION
   this.socket.on('docUpdate', ({ rawContentJSON, lastChangeType }) => {
+    console.log('Someone made a live update');
     const content = contentFromJSON(rawContentJSON);
     const newEditorState = EditorState.push(this.state.editorState, content, lastChangeType);
     this.updateLive(newEditorState);
