@@ -22,6 +22,8 @@ io.on('connection', socket => {
     if (!requestedRoom.docId) {
       return socket.emit('errorMessage', 'No room!');
     }
+    socket.document = requestedRoom.docId;
+    socket.username = requestedRoom.username;
     if(NumOfClients(requestedRoom.docId) < 6){
       socket.join(requestedRoom.docId, () => {
         socket.to(requestedRoom.docId).emit('joined', requestedRoom.username);
