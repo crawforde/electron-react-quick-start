@@ -1,4 +1,5 @@
 import React from 'react';
+import { Loader, Dimmer } from 'semantic-ui-react';
 import { Editor, EditorState, RichUtils, Modifier } from 'draft-js';
 import Toolbar from './Toolbar';
 import Save from './Save';
@@ -40,7 +41,8 @@ class MyEditor extends React.Component {
       SIZE: 'mixed',
       readOnly: false,
       //liveEditors: ,
-      notification: ''
+      notification: '',
+      visible: false
     };
 
     // BIND COMPONENT METHODS
@@ -219,7 +221,6 @@ class MyEditor extends React.Component {
     this.props.history.push(`/docPortal/${this.state.username}`);
   }
 
-
   logout(){
     this.socket.emit('leaveDoc', {docId: this.state.docId, username: this.state.username});
     this.socket.disconnect();
@@ -243,9 +244,10 @@ class MyEditor extends React.Component {
         <Modal
           isOpen={this.state.loading}
           style={modalStyles}
-          contentLabel={(this.props.newDoc) ? "New Document" : "New Collaboration"}
           >
-            <h2>Loading...</h2>
+            <Dimmer active>
+              <Loader active>Preparing Files</Loader>
+            </Dimmer>
        </Modal>
        <Toolbar
          COLOR={this.state.COLOR}

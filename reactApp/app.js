@@ -15,18 +15,18 @@ class Home extends React.Component {
   render() {
     return (
       <HashRouter>
-      <div>
+        <div>
           <Route exact path="/" component={UserValidation} />
           <Route path="/login" component={Login}/>
           <Route path="/register" component={Register}/>
           <Route path="/docPortal/:username" component={DocPortal}/>
           <Route path="/editorView/:username/:docId" component={MyEditor}/>
-      </div>
+        </div>
       </HashRouter>
     );
   }
 }
 ReactDOM.render(
   <Home />,
- document.getElementById('root')
+  document.getElementById('root')
 );
