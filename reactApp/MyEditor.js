@@ -11,8 +11,7 @@ import { modalStyles } from '../public/styles/styles.js';
 import { contentFromJSON, contentToJSON, assignDropdownValues } from './staticMethods';
 import setUpClientSocket from './setUpClientSocket';
 
-const SERVER_URL = "http://localhost:3000";
-const SOCKET_SERVER_URL = "http://eaacacab.ngrok.io";
+const SERVER_URL = "http://0af986ec.ngrok.io";
 const LIVE_VERSION_WAIT_TIME = 3;                           // MAXIMUM NUMBER OF SECONDS WE ARE WILLING TO WAIT FOR A LIVE VERSION OF THE DOCUMENT FROM OTHER EDITORS
 
 // Random comment

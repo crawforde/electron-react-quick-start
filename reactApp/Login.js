@@ -51,13 +51,23 @@ class Login extends React.Component {
   render() {
     return (this.state.redirect) ? (<Redirect to={`/docPortal/${this.state.username}`}/>) :
     (
-      <div>
-        <h1>Login to FakeDocs!</h1>
-        <Link to={'/register'}>Click here to Register :)</Link>
-        <div>
-          <input type='text' onChange={(e) => this.onNameChange(e)} placeholder="Username" />
-          <input type='password' onChange={(e) => this.onPasswordChange(e)} placeholder="Password" />
-          <button onClick={() => this.login()}>Login</button>
+      <div id="loginHeader">
+        <div className="topCorner">
+          <button className="topCornerButton"><Link to={'/register'}>Register</Link></button>
+        </div>
+        <div id="loginMain">
+          <h1>Docbright</h1>
+          <div id="loginButtons">
+            <div className="inputWithSymbol">
+              <div><span className="fa fa-user"/></div>
+              <input type='text' onChange={(e) => this.onNameChange(e)} placeholder="Username" />
+            </div>
+            <div className="inputWithSymbol">
+              <div><span className="fa fa-unlock-alt"/></div>
+              <input type='password' onChange={(e) => this.onPasswordChange(e)} placeholder="Password" />
+            </div>
+            <button id="loginButton" onClick={() => this.login()}>Login</button>
+          </div>
         </div>
       </div>
     );
@@ -103,7 +113,7 @@ class Register extends React.Component {
   render() {
 
     return (this.state.redirect) ? (<Redirect to={'/login'}/>) : (
-      <div>
+      <div className='login-container'>
         <h1>Register for FakeDocs!</h1>
         <Link to={'/login'}>Click here to Login</Link>
         <div>

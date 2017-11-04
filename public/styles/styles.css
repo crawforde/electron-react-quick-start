@@ -2,15 +2,96 @@ html,body,#root,#editor{
   height: 100vh;
   margin: 0;
   padding: 0;
+  font-family: Georgia, serif;
 }
 
 html,body,#root{
-  background-color: PaleGreen;
+  /*background-color: #0D1621;*/
+  background-color: black;
+}
+
+#root{
+  background-image: url("http://www.1zoom.me/big2/298/329492-alexfas01.jpg");
+  background-size: cover;
+  display: flex;
+  justify-content: center;
+}
+
+.topCorner{
+  display: flex;
+  justify-content: flex-end;
+}
+
+.topCornerButton{
+  border-radius: 5px;
+  font-size: 20px;
+  margin-top: 20px;
+  margin-right: 20px;
+}
+
+.topCornerButton, #loginButton{
+  background-color: rgb(255,215,0);
+  padding: 5px 10px 5px 10px;
+  border-color: rgb(255,225,0);
+}
+
+.topCornerButton:hover, #loginButton:hover{
+  background-color: rgb(235,195,0);
+}
+
+a {
+  color: DarkSlateGray;
+  font-family: Georgia, serif;
+}
+
+a:hover{
+    text-decoration: none;
+}
+
+#loginMain {
+  width: 100vw;
+  color: white;
+  margin-top: 20px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-direction: column;
+}
+
+#loginMain h1 {
+  font-size: 72px;
+  margin-bottom: 30px;
+}
+
+.inputWithSymbol{
+  display: flex;
+  margin-bottom: 3px;
+}
+
+.inputWithSymbol div{
+  width: 40px;
+  background-color: LightGray;
+  color: white;
+  font-size: 30px;
+  padding: 5px 10px 5px 10px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+#loginButtons{
+  display: flex;
+  justify-content: center;
+  flex-direction: column;
+  color: DarkSlateGray;
+  font-size: 20px;
 }
 
 #editor{
   margin: 10px;
+  width: 80vw;
 }
+
 
 #doc-id{
   display: flex;

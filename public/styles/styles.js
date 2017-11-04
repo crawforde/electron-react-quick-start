@@ -9,6 +9,14 @@ const modalStyles = {
   }
 };
 
+const loginContainerStyles = {
+  '#loginContainer' : {
+    color                 : 'white',
+    marginTop             : '50px'
+  }
+};
+
 module.exports={
-  modalStyles
+  modalStyles,
+  loginContainerStyles
 };
