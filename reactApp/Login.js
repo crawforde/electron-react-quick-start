@@ -8,7 +8,6 @@ import axios from 'axios';
 // .then(resp => resp.text())
 // .then(text => console.log(text))
 // .catch(err => {throw err;});
-const SERVER_URL = "http://0af986ec.ngrok.io";
 
 class UserValidation extends React.Component {
   render() {
@@ -20,7 +19,6 @@ class UserValidation extends React.Component {
     );
   }
 }
-
 
 class Login extends React.Component {
   constructor(props) {

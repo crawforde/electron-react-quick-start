@@ -91,7 +91,7 @@ app.use(function(err, req, res, next) {
   });
 });
 
-var server = app.listen(process.env.DOMAIN || 3000, function () {
+var server = app.listen( 3000, function () {
   console.log('Backend server for Electron App running on port 3000!');
 });
 require('./webSockets')(server);
